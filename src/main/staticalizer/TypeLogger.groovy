@@ -1,6 +1,7 @@
 package staticalizer
 
 import groovy.transform.*
+import java.text.SimpleDateFormat
 
 @TupleConstructor
 @ToString
@@ -74,6 +75,16 @@ class TypeInfoRegistry {
 
   void emit(Writer output, String str) {
     output.write(str+"\n")
+  }
+
+  String fileTime(String fileName) {
+    File file = new File(fileName)
+    def lastModified = file.lastModified()
+    Date date = new Date(lastModified)
+    //    String pat = "EEE MMM dd HH:mm:ss yyyy";
+    String pat = "yyyy-mm-dd HH:mm:ss.SSSSSSSSS Z";
+    SimpleDateFormat sdf = new SimpleDateFormat(pat, Locale.US);
+    return sdf.format(date)
   }
 
   void emitDiff(Writer output) {
