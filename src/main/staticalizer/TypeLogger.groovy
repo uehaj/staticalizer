@@ -105,7 +105,7 @@ class TypeLogger {
   static private initialize() {
     initialized = true
     Runtime.getRuntime().addShutdownHook(new Thread({
-                                                      new File("staticalize.patch").withWriter { writer ->
+                                                      new File("staticalizer.patch").withWriter { writer ->
                                                         repo.emitDiff(writer)
                                                       }
                                                     }))
