@@ -62,6 +62,8 @@ class Arguments {
 }
 
 class TypeInfoRegistry {
+  private static final String CHANGED_FILENAME_POSTFIX = ".command"
+  
   Map<MethodCall, Set<List>> typeInfoMap = new HashMap().withDefault {new HashSet()}
 
   void addTypeInfo(String sourceFileName, int lineNumber, String methodName, List<List<String>> args) {
@@ -94,8 +96,10 @@ class TypeInfoRegistry {
     typeInfoMap.keySet().sort().each { methodCall ->
       if (fileName != methodCall.sourceFileName) {
         fileName = methodCall.sourceFileName
-        emit(output, "--- "+fileName+" 2012-11-17 21:05:08.000000000 +0900")
-        emit(output, "+++ "+fileName+".staticgroovy"+" 2012-11-17 21:05:08.000000000 +0900")
+        def changedFileName = fileName + CHANGED_FILENAME_POSTFIX
+        def time = fileTime(fileName)
+        emit(output, "--- "+fileName+" "+time)
+        emit(output, "+++ "+changedFileName+" "+time)
         ofs = 0
       }
       methodCall.with {
@@ -107,19 +111,22 @@ class TypeInfoRegistry {
         }
       }
     }
+    println "Patch file '${TypeLogger.PATCH_FILENAME}' genelated, verify the content of it and do following command:\n\
+ % (cd /; patch -b -p0) < ${TypeLogger.PATCH_FILENAME}"
   }
 }
 
 class TypeLogger {
+  private static final String PATCH_FILENAME = "staticalizer.patch"
   static private boolean initialized = false
   static private TypeInfoRegistry repo = new TypeInfoRegistry()
   static private initialize() {
     initialized = true
     Runtime.getRuntime().addShutdownHook(new Thread({
-                                                      new File("staticalizer.patch").withWriter { writer ->
-                                                        repo.emitDiff(writer)
-                                                      }
-                                                    }))
+      new File(PATCH_FILENAME).withWriter { writer ->
+                                            repo.emitDiff(writer)
+      }
+    }))
   }
   static void log(String sourceFileName, int sourceLineNum, String methodName, List args) {
     // println "$sourceFileName:$sourceLineNum:$methodName($args)"
