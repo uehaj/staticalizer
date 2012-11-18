@@ -3,15 +3,11 @@ package staticalizer
 import groovy.transform.*
 import java.text.SimpleDateFormat
 
-@TupleConstructor
-@ToString
+@Canonical
 class MethodCall implements Comparable {
   String sourceFileName
   int lineNumber
   String methodName
-  boolean equals(rhs) {
-    compareTo(rhs) == 0
-  }
   int compareTo(rhs) {
     if (rhs == null) { throw new NullPointerException() }
     if (sourceFileName == rhs.sourceFileName) {
@@ -21,9 +17,6 @@ class MethodCall implements Comparable {
       else return lineNumber <=> rhs.lineNumber
     }
     else return sourceFileName <=> rhs.sourceFileName
-  }
-  int hashCode() {
-    return sourceFileName.hashCode() + methodName.hashCode() + lineNumber
   }
 }
 
