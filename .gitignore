@@ -1,2 +1,4 @@
 build/*
-staticalize.patch
+staticalizer.patch
+.DS_Store
+#	.gradle/
