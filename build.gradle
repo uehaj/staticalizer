@@ -1,0 +1,16 @@
+apply plugin : 'groovy'
+// apply plugin: 'java'
+// apply plugin: 'maven'
+// apply plugin: 'eclipse'
+defaultTasks 'build'
+
+repositories { mavenCentral() }
+
+group = 'org.jggug.kobo'
+archivesBaseName = 'staticalizer'
+version = '0.1'
+
+dependencies {
+    groovy 'org.codehaus.groovy:groovy-all:2.0.0'
+    testCompile 'junit:junit:4.7'
+}

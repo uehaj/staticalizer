@@ -8,7 +8,7 @@ import org.codehaus.groovy.control.*
 import org.codehaus.groovy.transform.*
 
 @GroovyASTTransformation(phase=CompilePhase.SEMANTIC_ANALYSIS)
-public class TypeLoggingASTTransformation implements ASTTransformation {
+public class TypeLoggingASTTransformation extends ClassCodeVisitorSupport implements ASTTransformation {
 
   SourceUnit sourceUnit = sourceUnit
   SourceUnit getSourceUnit() {
@@ -19,6 +19,7 @@ public class TypeLoggingASTTransformation implements ASTTransformation {
     this.sourceUnit = sourceUnit
     def methodNode = nodes[1]
     insertParameterLoggingAst(methodNode)
+    this.visitMethod(methodNode)
 
     // followings are for global ast transformation
     // List methods = sourceUnit.getAST()?.getMethods()
@@ -45,7 +46,7 @@ public class TypeLoggingASTTransformation implements ASTTransformation {
     return new ExpressionStatement(
       new StaticMethodCallExpression(
         new ClassNode(staticalizer.TypeLogger),
-        "log",
+        "logArgs",
         createLogArgs(method)
       )
     )
@@ -91,5 +92,10 @@ public class TypeLoggingASTTransformation implements ASTTransformation {
     )
     result.addExpression(new ConstantExpression(param.name))
     result
+  }
+
+  void visitReturnStatement(ReturnStatement statement) {
+    println "hoge"
+    super.visitReturnStatement(statement);
   }
 }

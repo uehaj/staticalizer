@@ -100,7 +100,7 @@ class TypeInfoRegistry {
         emit(output, "@@ -${lineNumber+1},0 +${lineNumber+1+ofs},${diffs.size()} @@")
         ofs += diffs.size()
         diffs.each {
-          emit(output, "+//"+methodName+"("+emitArgs(it)+")")
+          emit(output, "+// TODO:"+methodName+"("+emitArgs(it)+")")
         }
       }
     }
@@ -121,13 +121,14 @@ class TypeLogger {
       }
     }))
   }
-  static void log(String sourceFileName, int sourceLineNum, String methodName, List args) {
-    // println "$sourceFileName:$sourceLineNum:$methodName($args)"
+  static void logArgs(String sourceFileName, int sourceLineNum, String methodName, List args) {
+    println "$sourceFileName:$sourceLineNum:$methodName($args)"
     if (!initialized) {
       initialize()
     }
     repo.addTypeInfo(sourceFileName, sourceLineNum, methodName, args)
   }
+  static Object logReturnValue(String sourceFileName, int sourceLineNum, String methodName, String returnType) {
+    println "$sourceFileName:$sourceLineNum:$methodName() returns $returnType"
+  }
 }
-
-
