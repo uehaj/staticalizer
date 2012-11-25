@@ -8,7 +8,8 @@ import org.codehaus.groovy.control.*
 import org.codehaus.groovy.transform.*
 
 @GroovyASTTransformation(phase=CompilePhase.SEMANTIC_ANALYSIS)
-public class TypeLoggingASTTransformation extends ClassCodeVisitorSupport implements ASTTransformation {
+public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer implements ASTTransformation {
+  //public class TypeLoggingASTTransformation extends ClassCodeVisitorSupport implements ASTTransformation {
 
   SourceUnit sourceUnit = sourceUnit
   SourceUnit getSourceUnit() {
@@ -19,8 +20,7 @@ public class TypeLoggingASTTransformation extends ClassCodeVisitorSupport implem
     this.sourceUnit = sourceUnit
     def methodNode = nodes[1]
     insertParameterLoggingAst(methodNode)
-    this.visitMethod(methodNode)
-
+    visitMethod((MethodNode) methodNode);
     // followings are for global ast transformation
     // List methods = sourceUnit.getAST()?.getMethods()
     // // find all methods annotated with @WithTypeLogging
@@ -34,26 +34,27 @@ public class TypeLoggingASTTransformation extends ClassCodeVisitorSupport implem
   private void insertParameterLoggingAst(MethodNode method) {
     /*
       def method(param) {
-        ...<@>...
-        ...
+        ... <==
       }
      */
     method.getCode().getStatements().add(0, createParameterTypeLoggingAst(method))
   }
 
   private Statement createParameterTypeLoggingAst(MethodNode method) {
-    /* TypeLogger.log(...<@>...) */
+    /* TypeLogger.logArgs(...) <== */
     return new ExpressionStatement(
       new StaticMethodCallExpression(
         new ClassNode(staticalizer.TypeLogger),
         "logArgs",
-        createLogArgs(method)
+        createLoggingArgs(method)
       )
     )
   }
 
-  private ArgumentListExpression createLogArgs(MethodNode method) {
-    /* TypeLogger.log(sourceFileName, lineNumber, methodName, ...<@>...) */
+  private ArgumentListExpression createLoggingArgs(MethodNode method) {
+    /* TypeLogger.logArgs(
+         sourceFileName, lineNumber, methodName, ...  <== 
+       ) */
     new ArgumentListExpression(
       new ConstantExpression(sourceUnit.name),
       new ConstantExpression(method.lineNumber),
@@ -63,8 +64,9 @@ public class TypeLoggingASTTransformation extends ClassCodeVisitorSupport implem
   }
   
   private ListExpression createParameterTypeInfoList(MethodNode method) {
-    /* TypeLogger.log(sourceFileName, lineNumber, methodName,
-       [ ...<@>..., ...<@>..., ...<@>... ] ) */
+    /* TypeLogger.logArgs(sourceFileName, lineNumber, methodName,
+         [ ..., ..., ..., ] <==
+       ) */
     def result = new ListExpression()
     method.parameters.each { param ->
       result.addExpression(
@@ -75,8 +77,12 @@ public class TypeLoggingASTTransformation extends ClassCodeVisitorSupport implem
   }
   
   private ListExpression createParameterTypeInfo(Parameter param) {
-    /* TypeLogger.log(sourceFileName, lineNumber, methodName,
-       [ [ getClass().getName(), param.name ], ..., ... ]
+    /* TypeLogger.logArgs(sourceFileName, lineNumber, methodName,
+         [
+           [ ${param.name}.getClass().getName(), "${param.name}" ],   <==
+             ...,
+             ...,
+         ]
        ) */
     def result = new ListExpression()
     result.addExpression(
@@ -94,8 +100,47 @@ public class TypeLoggingASTTransformation extends ClassCodeVisitorSupport implem
     result
   }
 
+  Expression transform(Expression exp) {
+    return super.transform(exp)
+  }
+  
+  MethodNode method;
+
+  @Override
+  void visitMethod(MethodNode methodNode) {
+    println "visitMethod($methodNode)"
+    method = methodNode
+    if (methodNode.returnType.name == "java.lang.Object") {
+      super.visitMethod(methodNode)
+    }
+  }
+
+  @Override
   void visitReturnStatement(ReturnStatement statement) {
-    println "hoge"
+    statement.setExpression(createReturnTypeLoggingAst(statement.getExpression()));
     super.visitReturnStatement(statement);
   }
+
+  Expression createReturnTypeLoggingAst(Expression expression) {
+    /* TypeLogger.logReturn(...) <== */
+    return new StaticMethodCallExpression(
+      new ClassNode(staticalizer.TypeLogger),
+      "logReturn",
+      createLoggingReturn(expression)
+    )
+  }
+  
+  Expression createLoggingReturn(Expression expression) {
+    /* TypeLogger.logReturn(
+         sourceFileName, lineNumber, methodName, expression   <==
+       )
+    */
+    new ArgumentListExpression(
+      new ConstantExpression(sourceUnit.name),
+      new ConstantExpression(method.lineNumber),
+      new ConstantExpression(method.name),
+      expression
+    )
+  }
+  
 }

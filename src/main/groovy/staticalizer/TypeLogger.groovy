@@ -59,17 +59,18 @@ class TypeInfoRegistry {
   
   Map<MethodCall, Set<List>> typeInfoMap = new HashMap().withDefault {new HashSet()}
 
-  void addTypeInfo(String sourceFileName, int lineNumber, String methodName, List<List<String>> args) {
+  void addArgsTypeInfo(String sourceFileName, int lineNumber, String methodName, List<List<String>> args) {
     def methodCall = new MethodCall(sourceFileName, lineNumber, methodName)
     typeInfoMap.get(methodCall).add(new Arguments(args))
   }
 
-  String emitArgs(Arguments args) {
-    args.arguments.collect{it[0]+" "+it[1]}.join(",")
+  void addReturnTypeInfo(String sourceFileName, int lineNumber, String methodName, String returnType) {
+    def methodCall = new MethodCall(sourceFileName, lineNumber, methodName)
+    typeInfoMap.get(methodCall).add(returnType)
   }
 
-  void emit(Writer output, String str) {
-    output.write(str+"\n")
+  String composeArgs(Arguments args) {
+    args.arguments.collect{it[0]+" "+it[1]}.join(",")
   }
 
   String fileTime(String fileName) {
@@ -80,6 +81,10 @@ class TypeInfoRegistry {
     String pat = "yyyy-mm-dd HH:mm:ss.SSSSSSSSS Z";
     SimpleDateFormat sdf = new SimpleDateFormat(pat, Locale.US);
     return sdf.format(date)
+  }
+
+  void emit(Writer output, String str) {
+    output.write(str+"\n")
   }
 
   void emitDiff(Writer output) {
@@ -100,12 +105,17 @@ class TypeInfoRegistry {
         emit(output, "@@ -${lineNumber+1},0 +${lineNumber+1+ofs},${diffs.size()} @@")
         ofs += diffs.size()
         diffs.each {
-          emit(output, "+// TODO:"+methodName+"("+emitArgs(it)+")")
+          if (it instanceof Arguments) {
+            emit(output, "+// TODO:(argument type)"+methodName+"("+composeArgs(it)+")")
+          }
+          else if (it instanceof String) {
+            emit(output, "+// TODO:(return type)"+it+" "+methodName+"(...)")
+          }
         }
       }
     }
-    println "Patch file '${TypeLogger.PATCH_FILENAME}' genelated, verify the content of it and do following command:\n\
- % (cd /; patch -b -p0) < ${TypeLogger.PATCH_FILENAME}"
+    println """Patch file '${TypeLogger.PATCH_FILENAME}' genelated, verify the content of it and do following command:
+ % (cd /; patch -b -p0) < ${TypeLogger.PATCH_FILENAME}"""
   }
 }
 
@@ -113,22 +123,29 @@ class TypeLogger {
   private static final String PATCH_FILENAME = "staticalizer.patch"
   static private boolean initialized = false
   static private TypeInfoRegistry repo = new TypeInfoRegistry()
+  static private shutdown() {
+    new File(PATCH_FILENAME).withWriter { writer ->
+      repo.emitDiff(writer)
+    }
+  }
   static private initialize() {
     initialized = true
-    Runtime.getRuntime().addShutdownHook(new Thread({
-      new File(PATCH_FILENAME).withWriter { writer ->
-                                            repo.emitDiff(writer)
-      }
-    }))
+    Runtime.getRuntime().addShutdownHook(new Thread({shutdown()}))
   }
   static void logArgs(String sourceFileName, int sourceLineNum, String methodName, List args) {
     println "$sourceFileName:$sourceLineNum:$methodName($args)"
     if (!initialized) {
       initialize()
     }
-    repo.addTypeInfo(sourceFileName, sourceLineNum, methodName, args)
+    repo.addArgsTypeInfo(sourceFileName, sourceLineNum, methodName, args)
   }
-  static Object logReturnValue(String sourceFileName, int sourceLineNum, String methodName, String returnType) {
+  static Object logReturn(String sourceFileName, int sourceLineNum, String methodName, Object returnValue) {
+    String returnType = returnValue.getClass().getName()
     println "$sourceFileName:$sourceLineNum:$methodName() returns $returnType"
+    if (!initialized) {
+      initialize()
+    }
+    repo.addReturnTypeInfo(sourceFileName, sourceLineNum, methodName, returnType)
+    return returnValue
   }
 }
