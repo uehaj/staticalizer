@@ -2,3 +2,4 @@ build/*
 staticalizer.patch
 .DS_Store
 #	.gradle/
+*~

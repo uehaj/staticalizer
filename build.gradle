@@ -15,3 +15,5 @@ dependencies {
     groovy 'org.codehaus.groovy:groovy:2.0.0'
     testCompile 'junit:junit:4.7'
 }
+
+test.dependsOn jar

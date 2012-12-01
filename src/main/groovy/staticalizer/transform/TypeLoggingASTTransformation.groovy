@@ -12,14 +12,16 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
   //public class TypeLoggingASTTransformation extends ClassCodeVisitorSupport implements ASTTransformation {
 
   SourceUnit sourceUnit = sourceUnit
+
+  @Override
   SourceUnit getSourceUnit() {
     return sourceUnit;
   }
 
+  @Override
   public void visit(ASTNode[] nodes, SourceUnit sourceUnit) {
     this.sourceUnit = sourceUnit
     def methodNode = nodes[1]
-    insertParameterLoggingAst(methodNode)
     visitMethod((MethodNode) methodNode);
     // followings are for global ast transformation
     // List methods = sourceUnit.getAST()?.getMethods()
@@ -31,44 +33,96 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
     // }
   }
 
-  private void insertParameterLoggingAst(MethodNode method) {
+  @Override
+  Expression transform(Expression exp) {
+    if (exp == null) return null
+    if (exp.class == MethodCallExpression) {
+      // transformの呼び出しを単に分配する(なぜか自動的には分配されないため)
+      def object = transform(exp.getObjectExpression())
+      def method = transform(exp.getMethod())
+      def args = transform(exp.getArguments())
+      def result = new MethodCallExpression(object, method, args)
+    println "[2]"
+      return result
+    }
+    else if (exp.class == ClosureExpression) {
+      visitClosureExpression(exp)
+      println "[3]"
+      // visitの呼び出しを単に分配する(なぜか自動的には分配されないため)
+      Statement code = exp.getCode()
+      if (code != null) code.visit(this)
+    println "[4]"
+      return exp
+    }
+    else if (exp.class == ConstructorCallExpression) {
+    println "[5]"
+      // transformExpressionに分配する
+      return exp.transformExpression(this)
+    }
+    println "[6]"
+    return exp.transformExpression(this)
+  }
+  
+  @Override
+  void visitClosureExpression(ClosureExpression closureNode) {
+    println "visitClosureExpression($closureNode)"
+    insertParameterLoggingAst(closureNode)
+    closureNode.getCode().visit(this);
+  }
+
+  MethodNode method;
+
+  @Override
+  void visitMethod(MethodNode methodNode) {
+    println "visitMethod($methodNode)"
+    method = methodNode
+    insertParameterLoggingAst(methodNode)
+    super.visitMethod(methodNode)
+  }
+
+  private void insertParameterLoggingAst(methodOrClosure) {
     /*
       def method(param) {
         ... <==
       }
      */
-    method.getCode().getStatements().add(0, createParameterTypeLoggingAst(method))
+    println "------------$methodOrClosure---------"
+    println "------------<<<${methodOrClosure.parameters}>>---------"
+    if (!(methodOrClosure instanceof MethodNode) || methodOrClosure.parameters.size() > 0) {
+      println "------------${methodOrClosure.parameters}---------"
+      methodOrClosure.getCode().getStatements().add(0, createParameterTypeLoggingAst(methodOrClosure))
+    }
   }
 
-  private Statement createParameterTypeLoggingAst(MethodNode method) {
+  private Statement createParameterTypeLoggingAst(methodOrClosure) {
     /* TypeLogger.logArgs(...) <== */
     return new ExpressionStatement(
       new StaticMethodCallExpression(
         new ClassNode(staticalizer.TypeLogger),
         "logArgs",
-        createLoggingArgs(method)
+        createLoggingArgs(methodOrClosure)
       )
     )
   }
 
-  private ArgumentListExpression createLoggingArgs(MethodNode method) {
+  private ArgumentListExpression createLoggingArgs(methodOrClosure) {
     /* TypeLogger.logArgs(
          sourceFileName, lineNumber, methodName, ...  <== 
        ) */
     new ArgumentListExpression(
       new ConstantExpression(sourceUnit.name),
-      new ConstantExpression(method.lineNumber),
-      new ConstantExpression(method.name),
-      createParameterTypeInfoList(method)
+      new ConstantExpression(methodOrClosure.lineNumber),
+      new ConstantExpression(methodOrClosure instanceof MethodNode ? methodOrClosure.name : "<closure>"),
+      createParameterTypeInfoList(methodOrClosure)
     )
   }
-  
-  private ListExpression createParameterTypeInfoList(MethodNode method) {
+
+  private ListExpression createParameterTypeInfoList(methodOrClosure) {
     /* TypeLogger.logArgs(sourceFileName, lineNumber, methodName,
          [ ..., ..., ..., ] <==
        ) */
     def result = new ListExpression()
-    method.parameters.each { param ->
+    methodOrClosure.parameters.each { param ->
       result.addExpression(
         createParameterTypeInfo(param)
       )
@@ -100,24 +154,11 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
     result
   }
 
-  Expression transform(Expression exp) {
-    return super.transform(exp)
-  }
-  
-  MethodNode method;
-
-  @Override
-  void visitMethod(MethodNode methodNode) {
-    println "visitMethod($methodNode)"
-    method = methodNode
-    if (methodNode.returnType.name == "java.lang.Object") {
-      super.visitMethod(methodNode)
-    }
-  }
-
   @Override
   void visitReturnStatement(ReturnStatement statement) {
-    statement.setExpression(createReturnTypeLoggingAst(statement.getExpression()));
+    if (method.returnType.name == "java.lang.Object") {
+      statement.setExpression(createReturnTypeLoggingAst(statement.getExpression()));
+    }
     super.visitReturnStatement(statement);
   }
 
@@ -142,5 +183,4 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
       expression
     )
   }
-  
 }

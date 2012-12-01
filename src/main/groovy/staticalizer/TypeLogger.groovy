@@ -106,15 +106,15 @@ class TypeInfoRegistry {
         ofs += diffs.size()
         diffs.each {
           if (it instanceof Arguments) {
-            emit(output, "+// TODO:(argument type)"+methodName+"("+composeArgs(it)+")")
+            emit(output, "+// TODO: Change argument type: "+methodName+"("+composeArgs(it)+")")
           }
           else if (it instanceof String) {
-            emit(output, "+// TODO:(return type)"+it+" "+methodName+"(...)")
+            emit(output, "+// TODO: Change return type: "+it+" "+methodName+"(...)")
           }
         }
       }
     }
-    println """Patch file '${TypeLogger.PATCH_FILENAME}' genelated, verify the content of it and do following command:
+    println """Patch file '${TypeLogger.PATCH_FILENAME}' generated, verify the content of it and do following command:
  % (cd /; patch -b -p0) < ${TypeLogger.PATCH_FILENAME}"""
   }
 }
@@ -124,15 +124,13 @@ class TypeLogger {
   static private boolean initialized = false
   static private TypeInfoRegistry repo = new TypeInfoRegistry()
   static private shutdown() {
-    new File(PATCH_FILENAME).withWriter { writer ->
-      repo.emitDiff(writer)
-    }
+    new File(PATCH_FILENAME).withWriter { repo.emitDiff(it) }
   }
   static private initialize() {
     initialized = true
     Runtime.getRuntime().addShutdownHook(new Thread({shutdown()}))
   }
-  static void logArgs(String sourceFileName, int sourceLineNum, String methodName, List args) {
+  static Object logArgs(String sourceFileName, int sourceLineNum, String methodName, List args) {
     println "$sourceFileName:$sourceLineNum:$methodName($args)"
     if (!initialized) {
       initialize()
