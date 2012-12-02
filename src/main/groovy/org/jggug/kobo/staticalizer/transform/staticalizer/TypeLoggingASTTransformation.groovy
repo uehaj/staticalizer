@@ -87,7 +87,9 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
   @Override
   void visitMethod(MethodNode method) {
     savedMethodForHandleReturn = method
-    insertMethodParameterLoggingAst(method)
+    if (method.parameters.find { it.type.name == "java.lang.Object" } != null) {
+      insertMethodParameterLoggingAst(method)
+    }
     super.visitMethod(method)
   }
 

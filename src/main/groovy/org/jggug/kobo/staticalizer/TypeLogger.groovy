@@ -29,7 +29,7 @@ class TypeLogger {
   static private shutdown() {
     new File(PATCH_FILENAME).withWriter { writer ->
       def emitter = new PatchEmitter(writer)
-      emitter.emitDiff(registry.typeLogMap)
+      emitter.emitDiff(registry)
     }
   }
   
@@ -47,7 +47,8 @@ class TypeLogger {
 
   static Object logClosureArgs(String sourceFileName, int sourceLineNum, int sourceColumnNum, List args) {
     initialize()
-    registry.addClosureArgsTypeLog(sourceFileName, sourceLineNum, sourceColumnNum, args)
+    // souceLineNum is +1ed because of unknown reason, so decrement 1.
+    registry.addClosureArgsTypeLog(sourceFileName, sourceLineNum-1, sourceColumnNum, args)
   }
   
   static Object logReturn(String sourceFileName, int sourceLineNum, int sourceColumnNum, String methodName, Object returnValue) {
@@ -56,5 +57,4 @@ class TypeLogger {
     registry.addReturnTypeLog(sourceFileName, sourceLineNum, sourceColumnNum, methodName, returnType)
     return returnValue
   }
-
 }

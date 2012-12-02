@@ -23,12 +23,12 @@ import groovy.util.GroovyTestCase
 class TypeLoggingTest extends GroovyTestCase {
   def groovyCommand = ["groovy", "-cp", "build/libs/staticalizer-0.1.jar", "-e"]
 
-  def lsep = System.getProperty('line.separator')
+  static lsep = System.getProperty('line.separator')
 
-  def lastLines(text, count=1) {
+  static lastLines(text, count=1) {
     text.split(lsep)[-count..-1]
   }
-
+  
   static private final File patchFile = new File(TypeLogger.PATCH_FILENAME)
   
   void testMethodArg() {
@@ -46,7 +46,7 @@ class TypeLoggingTest extends GroovyTestCase {
     
     def result = lastLines(patchFile.text, 1)
     assert result.size() == 1
-    assert result[0] == '+// TODO: Change argument type: foo(java.lang.Integer i)'
+    assert result[0] == '+// TODO: Change method argument type: foo(java.lang.Integer i)'
   }
 
   void testMethodArgs() {
@@ -64,7 +64,7 @@ class TypeLoggingTest extends GroovyTestCase {
 
     def result = lastLines(patchFile.text, 1)
     assert result.size() == 1
-    assert result[0] == '+// TODO: Change argument type: foo(java.lang.Integer i,java.math.BigDecimal j,java.lang.Double k,java.lang.String s)'
+    assert result[0] == '+// TODO: Change method argument type: foo(java.lang.Integer i,java.math.BigDecimal j,java.lang.Double k,java.lang.String s)'
   }
 
   void testMethodPartallyTypeSpecifiedArgs() {
@@ -81,7 +81,7 @@ class TypeLoggingTest extends GroovyTestCase {
 
     def result = lastLines(patchFile.text, 1)
     assert result.size() == 1
-    assert result[0] == '+// TODO: Change argument type: foo(java.lang.Integer i,java.math.BigDecimal j,java.lang.Double k,java.lang.String s)'
+    assert result[0] == '+// TODO: Change method argument type: foo(java.lang.Integer i,java.math.BigDecimal j,java.lang.Double k,java.lang.String s)'
   }
   
   void testClosureWithImplicitIt() {
@@ -254,8 +254,8 @@ class TypeLoggingTest extends GroovyTestCase {
 
     def result = lastLines(patchFile.text, 4)
     assert result.size() == 4
-    assert result[1] == '+// TODO: Change argument type: bar(java.lang.Integer i)'
-    assert result[3] == '+// TODO: Change argument type: foo(java.lang.Integer i)'
+    assert result[1] == '+// TODO: Change method argument type: bar(java.lang.Integer i)'
+    assert result[3] == '+// TODO: Change method argument type: foo(java.lang.Integer i)'
   }
   
 }

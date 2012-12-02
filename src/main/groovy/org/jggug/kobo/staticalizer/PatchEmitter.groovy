@@ -16,9 +16,10 @@
 package org.jggug.kobo.staticalizer
 
 import java.text.SimpleDateFormat
+import org.codehaus.groovy.ast.ClassNode
 
 /**
- * @author UEHARA Junji(uehaj@jggug.org)
+ * @author <a href="mailto:uehaj@jggug.org">UEHARA Junji</a>
  */
 class PatchEmitter {
   
@@ -39,10 +40,6 @@ class PatchEmitter {
     return sdf.format(date)
   }
 
-  static String composeArgs(Arguments args) {
-    args.arguments.collect{it[0]+" "+it[1]}.join(",")
-  }
-  
   void emit(String str) {
     output.write(str+"\n")
   }
@@ -54,39 +51,39 @@ class PatchEmitter {
     emit("+++ "+changedFileName+" "+time)
   }
 
-  void emitDiffs(Set diffs, MethodOrClosureDecl decl, int ofs) {
-    emit("@@ -${decl.lineNumber+1},0 +${decl.lineNumber+1+ofs},${diffs.size()} @@")
-    diffs.each {
-      if (it instanceof Arguments) {
-        if (decl.methodName == TypeLogRegistry.CLOSURE_MARKER) {
-          emit("+// TODO: Change closure argument type: { "+composeArgs(it)+" -> .. }")
-        }
-        else {
-          emit("+// TODO: Change argument type: "+decl.methodName+"("+composeArgs(it)+")")
-        }
-      }
-      else if (it instanceof String) {
-        emit("+// TODO: Change return type: "+it+" "+decl.methodName+"(...)")
-      }
+  static String composeArgs(Arguments args) {
+    args.arguments.collect{it[0]+" "+it[1]}.join(",")
+  }
+  
+  void emitDiffs(TypeLogRegistry registry, MethodOrClosureDecl decl, int ofs) {
+    emit("@@ -${decl.lineNumber+1},0 +${decl.lineNumber+1+ofs},1 @@")
+    switch (decl.type) {
+    case "C": // Closure argument type
+      emit("+// TODO: Change closure argument type: { "+registry.params(decl)+" -> .. }")
+      break;
+    case "M": // Method argument type
+      emit("+// TODO: Change method argument type: "+decl.methodName+"("+registry.params(decl)+")")
+      break;
+    case "R": // Returning type of method
+      emit("+// TODO: Change return type: "+registry.returnType(decl)+" "+decl.methodName+"(...)")
+      break;
     }
   }
 
-  void emitDiff(Map<MethodOrClosureDecl, Set> typeLogMap) {
+  void emitDiff(TypeLogRegistry registry) {
     String fileName = null
     int ofs = 0
 
-    typeLogMap.keySet().sort().each { MethodOrClosureDecl decl ->
+    registry.keys.sort().each { MethodOrClosureDecl decl ->
       if (fileName != decl.sourceFileName) {
         fileName = decl.sourceFileName
         emitHeader(fileName)
         ofs = 0
       }
-
-      def diffs = typeLogMap[decl]
-      emitDiffs(diffs, decl, ofs)
-      ofs += diffs.size()
+      emitDiffs(registry, decl, ofs)
+      ofs++
     }
-    println """Patch file '${TypeLogger.PATCH_FILENAME}' generated. Apply the patch by:
+    println """Patch file '${TypeLogger.PATCH_FILENAME}' generated. Apply the patch with command line:
  % (cd /; patch -b -p0) < ${TypeLogger.PATCH_FILENAME}"""
   }
 }  
