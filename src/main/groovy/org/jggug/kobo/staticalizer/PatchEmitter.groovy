@@ -36,7 +36,7 @@ class PatchEmitter {
     return sdf.format(date)
   }
 
-  static String composeArgs(args) {
+  static String composeArgs(Arguments args) {
     args.arguments.collect{it[0]+" "+it[1]}.join(",")
   }
   
