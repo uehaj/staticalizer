@@ -3,3 +3,5 @@ staticalizer.patch
 .DS_Store
 #	.gradle/
 *~
+test*.groovy
+*.groovy.orig
