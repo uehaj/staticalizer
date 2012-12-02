@@ -66,74 +66,111 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
   @Override
   void visitClosureExpression(ClosureExpression closureNode) {
     println "visitClosureExpression($closureNode)"
-    insertParameterLoggingAst(closureNode)
+    insertClosureParameterLoggingAst(closureNode)
     closureNode.getCode().visit(this);
   }
 
-  MethodNode method;
+  MethodNode savedMethodForHandleReturn;
 
   @Override
-  void visitMethod(MethodNode methodNode) {
-    println "visitMethod($methodNode)"
-    method = methodNode
-    insertParameterLoggingAst(methodNode)
-    super.visitMethod(methodNode)
+  void visitMethod(MethodNode method) {
+    println "visitMethod($method)"
+    savedMethodForHandleReturn = method
+    insertMethodParameterLoggingAst(method)
+    super.visitMethod(method)
   }
 
-  private void insertParameterLoggingAst(methodOrClosure) {
+  private void insertMethodParameterLoggingAst(MethodNode method) {
     /*
       def method(param) {
-        ... <==
+        TypeLogger.logMethodArgs(...) <== insert this
       }
      */
-    println "------------$methodOrClosure---------"
-    println "------------<<<${methodOrClosure.parameters}>>---------"
-    if (!(methodOrClosure instanceof MethodNode) || methodOrClosure.parameters.size() > 0) {
-      println "------------${methodOrClosure.parameters}---------"
-      methodOrClosure.getCode().getStatements().add(0, createParameterTypeLoggingAst(methodOrClosure))
+    if (method.parameters.size() > 0) {
+      method.getCode().getStatements().add(0, createMethodParameterTypeLoggingAst(method))
     }
   }
+  
+  private void insertClosureParameterLoggingAst(ClosureExpression closure) {
+    /*
+      ... { ... ->
+        TypeLogger.logClosureArgs(...) <== insert this
+      }
+     */
+    closure.getCode().getStatements().add(0, createClosureParameterTypeLoggingAst(closure))
+  }
 
-  private Statement createParameterTypeLoggingAst(methodOrClosure) {
-    /* TypeLogger.logArgs(...) <== */
+  private Statement createMethodParameterTypeLoggingAst(MethodNode method) {
+    /* TypeLogger.logMethodArgs(...) <== generate this */
     return new ExpressionStatement(
       new StaticMethodCallExpression(
         new ClassNode(staticalizer.TypeLogger),
-        "logArgs",
-        createLoggingArgs(methodOrClosure)
+        "logMethodArgs",
+        new ArgumentListExpression(
+          new ConstantExpression(sourceUnit.name),
+          new ConstantExpression(method.lineNumber),
+          new ConstantExpression(method.name),
+          createMethodParameterTypeInfoList(method)
+        )
       )
     )
   }
 
-  private ArgumentListExpression createLoggingArgs(methodOrClosure) {
-    /* TypeLogger.logArgs(
-         sourceFileName, lineNumber, methodName, ...  <== 
-       ) */
-    new ArgumentListExpression(
-      new ConstantExpression(sourceUnit.name),
-      new ConstantExpression(methodOrClosure.lineNumber),
-      new ConstantExpression(methodOrClosure instanceof MethodNode ? methodOrClosure.name : "<closure>"),
-      createParameterTypeInfoList(methodOrClosure)
+  private Statement createClosureParameterTypeLoggingAst(ClosureExpression closure) {
+    /* TypeLogger.logClosureArgs(...) <== generate this */
+    return new ExpressionStatement(
+      new StaticMethodCallExpression(
+        new ClassNode(staticalizer.TypeLogger),
+        "logClosureArgs",
+        new ArgumentListExpression(
+          new ConstantExpression(sourceUnit.name),
+          new ConstantExpression(closure.lineNumber),
+          createClosureParameterTypeInfoList(closure)
+        )
+      )
     )
   }
 
-  private ListExpression createParameterTypeInfoList(methodOrClosure) {
-    /* TypeLogger.logArgs(sourceFileName, lineNumber, methodName,
-         [ ..., ..., ..., ] <==
+  private ListExpression createMethodParameterTypeInfoList(MethodNode method) {
+    /* TypeLogger.logMethodArgs(
+         sourceFileName, lineNumber, methodName,
+           [ ..., ..., ..., ] <== generate this
        ) */
     def result = new ListExpression()
-    methodOrClosure.parameters.each { param ->
+    method.parameters.each { param ->
       result.addExpression(
-        createParameterTypeInfo(param)
+        createParameterTypeInfo(param.name)
       )
     }
     result
   }
   
-  private ListExpression createParameterTypeInfo(Parameter param) {
+  private ListExpression createClosureParameterTypeInfoList(ClosureExpression closureNode) {
+    /* TypeLogger.logClosureArgs(
+         sourceFileName, lineNumber,
+           [ ..., ..., ..., ] <== generate this
+       ) */
+    def result = new ListExpression()
+    if (closureNode.parameterSpecified) {
+      closureNode.parameters.each { param ->
+        result.addExpression(
+          createParameterTypeInfo(param.name)
+        )
+      }
+    }
+    else {
+      // handle implicit closure parameter 'it'
+      result.addExpression(
+        createParameterTypeInfo("it")
+      )
+    }
+    result
+  }
+  
+  private ListExpression createParameterTypeInfo(String paramName) {
     /* TypeLogger.logArgs(sourceFileName, lineNumber, methodName,
          [
-           [ ${param.name}.getClass().getName(), "${param.name}" ],   <==
+           [ ${paramName}.getClass().getName(), "${paramName}" ], <== generate this
              ...,
              ...,
          ]
@@ -142,7 +179,7 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
     result.addExpression(
       new MethodCallExpression(
         new MethodCallExpression(
-          new VariableExpression(param.name),
+          new VariableExpression(paramName),
           new ConstantExpression("getClass"),
           new ArgumentListExpression()
         ),
@@ -150,20 +187,20 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
         new ArgumentListExpression()
       )
     )
-    result.addExpression(new ConstantExpression(param.name))
+    result.addExpression(new ConstantExpression(paramName))
     result
   }
 
   @Override
   void visitReturnStatement(ReturnStatement statement) {
-    if (method.returnType.name == "java.lang.Object") {
+    if (savedMethodForHandleReturn.returnType.name == "java.lang.Object") {
       statement.setExpression(createReturnTypeLoggingAst(statement.getExpression()));
     }
     super.visitReturnStatement(statement);
   }
 
   Expression createReturnTypeLoggingAst(Expression expression) {
-    /* TypeLogger.logReturn(...) <== */
+    /* TypeLogger.logReturn(...) <== generate this */
     return new StaticMethodCallExpression(
       new ClassNode(staticalizer.TypeLogger),
       "logReturn",
@@ -173,13 +210,13 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
   
   Expression createLoggingReturn(Expression expression) {
     /* TypeLogger.logReturn(
-         sourceFileName, lineNumber, methodName, expression   <==
+         sourceFileName, lineNumber, methodName, expression <== generate this
        )
     */
     new ArgumentListExpression(
       new ConstantExpression(sourceUnit.name),
-      new ConstantExpression(method.lineNumber),
-      new ConstantExpression(method.name),
+      new ConstantExpression(savedMethodForHandleReturn.lineNumber),
+      new ConstantExpression(savedMethodForHandleReturn.name),
       expression
     )
   }
