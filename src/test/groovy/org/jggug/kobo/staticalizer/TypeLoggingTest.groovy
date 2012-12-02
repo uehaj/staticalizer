@@ -15,6 +15,9 @@
  */
 package org.jggug.kobo.staticalizer
 
+/**
+ * @author UEHARA Junji(uehaj@jggug.org)
+ */
 import groovy.util.GroovyTestCase
 
 class TypeLoggingTest extends GroovyTestCase {

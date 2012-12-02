@@ -15,27 +15,30 @@
  */
 package org.jggug.kobo.staticalizer
 
+/**
+ * @author UEHARA Junji(uehaj@jggug.org)
+ */
 class TypeLogRegistry {
   private static final String CLOSURE_MARKER = "<closure>"
   
-  final Map<MethodOrClosureDecl, Set<List>> typeLogMap = new HashMap().withDefault {new HashSet()}
+  final Map<MethodOrClosureDecl, Set> typeLogMap = new HashMap().withDefault {new HashSet()}
 
-  public Map<MethodOrClosureDecl, Set<List>> getTypeLogMap() {
+  public Map<MethodOrClosureDecl, Set> getTypeLogMap() {
     return typeLogMap
   }
 
   void addMethodArgsTypeLog(String sourceFileName, int lineNumber, int columnNumber, String methodName, List<List<String>> args) {
-    def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, columnNumber, methodName)
+    def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, columnNumber, methodName, "M")
     typeLogMap.get(decl).add(new Arguments(args))
   }
 
   void addClosureArgsTypeLog(String sourceFileName, int lineNumber, int columnNumber, List<List<String>> args) {
-    def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, columnNumber, CLOSURE_MARKER)
+    def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, columnNumber, CLOSURE_MARKER, "C")
     typeLogMap.get(decl).add(new Arguments(args))
   }
 
   void addReturnTypeLog(String sourceFileName, int lineNumber, int columnNumber, String methodName, String returnType) {
-    def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, columnNumber, methodName)
+    def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, columnNumber, methodName, "R")
     typeLogMap.get(decl).add(returnType)
   }
 

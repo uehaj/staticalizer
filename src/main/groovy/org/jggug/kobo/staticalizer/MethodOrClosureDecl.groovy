@@ -17,6 +17,9 @@ package org.jggug.kobo.staticalizer
 
 import groovy.transform.*
 
+/**
+ * @author UEHARA Junji(uehaj@jggug.org)
+ */
 @Canonical
 class MethodOrClosureDecl implements Comparable {
   
@@ -27,6 +30,8 @@ class MethodOrClosureDecl implements Comparable {
   int cloumnNumber
   
   String methodName
+
+  String type
   
   int compareTo(rhs) {
     if (rhs == null) { throw new NullPointerException() }
@@ -35,7 +40,10 @@ class MethodOrClosureDecl implements Comparable {
         if (columnNumber == rhs.columnNumber) {
           // following comparison is useless because if
           // column number is the same, method name should be same too.
-          return methodName <=> rhs.methodName
+          if (methodName == rhs.methodName) {
+            return type <=> rhs.type
+          }
+          else return methodName <=> rhs.methodName
         }
         else return columnNumber <=> rhs.columnNumber
       }

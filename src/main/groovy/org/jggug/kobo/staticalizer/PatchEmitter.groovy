@@ -17,6 +17,9 @@ package org.jggug.kobo.staticalizer
 
 import java.text.SimpleDateFormat
 
+/**
+ * @author UEHARA Junji(uehaj@jggug.org)
+ */
 class PatchEmitter {
   
   private static final String CHANGED_FILENAME_POSTFIX = ".changed"
@@ -51,7 +54,7 @@ class PatchEmitter {
     emit("+++ "+changedFileName+" "+time)
   }
 
-  void emitDiffs(Set<List> diffs, MethodOrClosureDecl decl, int ofs) {
+  void emitDiffs(Set diffs, MethodOrClosureDecl decl, int ofs) {
     emit("@@ -${decl.lineNumber+1},0 +${decl.lineNumber+1+ofs},${diffs.size()} @@")
     diffs.each {
       if (it instanceof Arguments) {
@@ -68,7 +71,7 @@ class PatchEmitter {
     }
   }
 
-  void emitDiff(Map<MethodOrClosureDecl, Set<List>> typeLogMap) {
+  void emitDiff(Map<MethodOrClosureDecl, Set> typeLogMap) {
     String fileName = null
     int ofs = 0
 

@@ -15,6 +15,9 @@
  */
 package org.jggug.kobo.staticalizer
 
+/**
+ * @author UEHARA Junji(uehaj@jggug.org)
+ */
 class TypeLogger {
   
   static private final String PATCH_FILENAME = "staticalizer.patch"

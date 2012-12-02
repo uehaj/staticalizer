@@ -21,6 +21,9 @@ import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target
 import org.codehaus.groovy.transform.GroovyASTTransformationClass
 
+/**
+ * @author UEHARA Junji(uehaj@jggug.org)
+ */
 @Retention(RetentionPolicy.SOURCE)
 @Target([ElementType.METHOD])
 @GroovyASTTransformationClass(["org.jggug.kobo.staticalizer.transform.TypeLoggingASTTransformation"])

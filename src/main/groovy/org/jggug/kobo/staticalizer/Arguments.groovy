@@ -17,6 +17,9 @@ package org.jggug.kobo.staticalizer
 
 import groovy.transform.*
 
+/**
+ * @author UEHARA Junji(uehaj@jggug.org)
+ */
 @TupleConstructor
 class Arguments {
   List<List<String>> arguments

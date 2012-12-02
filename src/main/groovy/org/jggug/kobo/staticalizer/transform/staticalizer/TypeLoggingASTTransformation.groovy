@@ -22,6 +22,9 @@ import org.codehaus.groovy.ast.stmt.*
 import org.codehaus.groovy.control.*
 import org.codehaus.groovy.transform.*
 
+/**
+ * @author UEHARA Junji(uehaj@jggug.org)
+ */
 @GroovyASTTransformation(phase=CompilePhase.SEMANTIC_ANALYSIS)
 public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer implements ASTTransformation {
   //public class TypeLoggingASTTransformation extends ClassCodeVisitorSupport implements ASTTransformation {
