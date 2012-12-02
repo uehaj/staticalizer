@@ -193,7 +193,12 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
 
   @Override
   void visitReturnStatement(ReturnStatement statement) {
+    println "---"
+    println savedMethodForHandleReturn.returnType
+    println savedMethodForHandleReturn.returnType.name
+    println "---"
     if (savedMethodForHandleReturn.returnType.name == "java.lang.Object") {
+      println "doit!"
       statement.setExpression(createReturnTypeLoggingAst(statement.getExpression()));
     }
     super.visitReturnStatement(statement);
@@ -201,23 +206,16 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
 
   Expression createReturnTypeLoggingAst(Expression expression) {
     /* TypeLogger.logReturn(...) <== generate this */
+    println "+++"
     return new StaticMethodCallExpression(
       new ClassNode(staticalizer.TypeLogger),
       "logReturn",
-      createLoggingReturn(expression)
-    )
-  }
-  
-  Expression createLoggingReturn(Expression expression) {
-    /* TypeLogger.logReturn(
-         sourceFileName, lineNumber, methodName, expression <== generate this
-       )
-    */
-    new ArgumentListExpression(
-      new ConstantExpression(sourceUnit.name),
-      new ConstantExpression(savedMethodForHandleReturn.lineNumber),
-      new ConstantExpression(savedMethodForHandleReturn.name),
-      expression
+      new ArgumentListExpression(
+        new ConstantExpression(sourceUnit.name),
+        new ConstantExpression(savedMethodForHandleReturn.lineNumber),
+        new ConstantExpression(savedMethodForHandleReturn.name),
+        expression
+      )
     )
   }
 }

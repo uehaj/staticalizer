@@ -129,34 +129,39 @@ class TypeInfoRegistry {
 }
 
 class TypeLogger {
-  private static final String PATCH_FILENAME = "staticalizer.patch"
+  
+  static private final String PATCH_FILENAME = "staticalizer.patch"
+  
   static private boolean initialized = false
+  
   static private TypeInfoRegistry repo = new TypeInfoRegistry()
+  
   static private shutdown() {
     new File(PATCH_FILENAME).withWriter { repo.emitDiff(it) }
   }
+  
   static private initialize() {
-    initialized = true
-    Runtime.getRuntime().addShutdownHook(new Thread({shutdown()}))
-  }
-  static Object logMethodArgs(String sourceFileName, int sourceLineNum, String methodName, List args) {
     if (!initialized) {
-      initialize()
+      initialized = true
+      Runtime.getRuntime().addShutdownHook(new Thread({shutdown()}))
     }
+  }
+  
+  static Object logMethodArgs(String sourceFileName, int sourceLineNum, String methodName, List args) {
+    initialize()
     repo.addMethodArgsTypeInfo(sourceFileName, sourceLineNum, methodName, args)
   }
+
   static Object logClosureArgs(String sourceFileName, int sourceLineNum, List args) {
-    if (!initialized) {
-      initialize()
-    }
+    initialize()
     repo.addClosureArgsTypeInfo(sourceFileName, sourceLineNum, args)
   }
+  
   static Object logReturn(String sourceFileName, int sourceLineNum, String methodName, Object returnValue) {
     String returnType = returnValue.getClass().getName()
-    if (!initialized) {
-      initialize()
-    }
+    initialize()
     repo.addReturnTypeInfo(sourceFileName, sourceLineNum, methodName, returnType)
     return returnValue
   }
+
 }
