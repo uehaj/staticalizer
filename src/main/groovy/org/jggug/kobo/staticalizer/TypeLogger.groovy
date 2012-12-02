@@ -16,7 +16,6 @@
 package org.jggug.kobo.staticalizer
 
 import groovy.transform.*
-import java.text.SimpleDateFormat
 
 @Canonical
 class MethodOrClosureDecl implements Comparable {
@@ -70,10 +69,9 @@ class Arguments {
 }
 
 class TypeInfoRegistry {
-  private static final String CHANGED_FILENAME_POSTFIX = ".changed"
   private static final String CLOSURE_MARKER = "<closure>"
   
-  Map<MethodOrClosureDecl, Set<List>> typeInfoMap = new HashMap().withDefault {new HashSet()}
+  final Map<MethodOrClosureDecl, Set<List>> typeInfoMap = new HashMap().withDefault {new HashSet()}
 
   void addMethodArgsTypeInfo(String sourceFileName, int lineNumber, String methodName, List<List<String>> args) {
     def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, methodName)
@@ -90,65 +88,6 @@ class TypeInfoRegistry {
     typeInfoMap.get(decl).add(returnType)
   }
 
-  String composeArgs(Arguments args) {
-    args.arguments.collect{it[0]+" "+it[1]}.join(",")
-  }
-
-  String fileTime(String fileName) {
-    File file = new File(fileName)
-    def lastModified = file.lastModified()
-    Date date = new Date(lastModified)
-    String pat = "yyyy-mm-dd HH:mm:ss.SSSSSSSSS Z";
-    SimpleDateFormat sdf = new SimpleDateFormat(pat, Locale.US);
-    return sdf.format(date)
-  }
-
-  void emit(Writer output, String str) {
-    output.write(str+"\n")
-  }
-
-  void emitHeader(Writer output, String fileName) {
-    def changedFileName = fileName + CHANGED_FILENAME_POSTFIX
-    def time = fileTime(fileName)
-    emit(output, "--- "+fileName+" "+time)
-    emit(output, "+++ "+changedFileName+" "+time)
-  }
-
-  void emitDiffs(Writer output, Set<List> diffs, MethodOrClosureDecl decl, int ofs) {
-    emit(output, "@@ -${decl.lineNumber+1},0 +${decl.lineNumber+1+ofs},${diffs.size()} @@")
-    diffs.each {
-      if (it instanceof Arguments) {
-        if (decl.methodName == CLOSURE_MARKER) {
-          emit(output, "+// TODO: Change closure argument type: { "+composeArgs(it)+" -> .. }")
-        }
-        else {
-          emit(output, "+// TODO: Change argument type: "+decl.methodName+"("+composeArgs(it)+")")
-        }
-      }
-      else if (it instanceof String) {
-        emit(output, "+// TODO: Change return type: "+it+" "+decl.methodName+"(...)")
-      }
-    }
-  }
-
-  void emitDiff(Writer output) {
-    String fileName = null
-    int ofs
-
-    typeInfoMap.keySet().sort().each { MethodOrClosureDecl decl ->
-      if (fileName != decl.sourceFileName) {
-        fileName = decl.sourceFileName
-        emitHeader(output, fileName)
-        ofs = 0
-      }
-
-      def diffs = typeInfoMap[decl]
-      emitDiffs(output, diffs, decl, ofs)
-      ofs += diffs.size()
-    }
-    println """Patch file '${TypeLogger.PATCH_FILENAME}' generated. Apply the patch by:
- % (cd /; patch -b -p0) < ${TypeLogger.PATCH_FILENAME}"""
-  }
 }
 
 class TypeLogger {
@@ -160,7 +99,10 @@ class TypeLogger {
   static private TypeInfoRegistry repo = new TypeInfoRegistry()
   
   static private shutdown() {
-    new File(PATCH_FILENAME).withWriter { repo.emitDiff(it) }
+    new File(PATCH_FILENAME).withWriter { writer ->
+      def emitter = new PatchEmitter(writer)
+      emitter.emitDiff(repo.typeInfoMap)
+    }
   }
   
   static private initialize() {
