@@ -1,7 +1,6 @@
-apply plugin : 'groovy'
-// apply plugin: 'java'
-// apply plugin: 'maven'
-// apply plugin: 'eclipse'
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
 defaultTasks 'build'
 
 repositories { mavenCentral() }
@@ -17,3 +16,26 @@ dependencies {
 }
 
 test.dependsOn jar
+
+configurations {
+    deployerJars
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        name = 'sshDeployer' // optional
+        configuration = configurations.deployerJars
+        repository(url: "scp://repos.mycompany.com/releases") {
+            authentication(userName: "me", password: "myPassword")
+        }
+        pom.project {
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+        }        
+    }
+}
