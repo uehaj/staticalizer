@@ -33,6 +33,8 @@ class MethodOrClosureDecl implements Comparable {
     if (sourceFileName == rhs.sourceFileName) {
       if (lineNumber == rhs.lineNumber) {
         if (columnNumber == rhs.columnNumber) {
+          // following comparison is useless because if
+          // column number is the same, method name should be same too.
           return methodName <=> rhs.methodName
         }
         else return columnNumber <=> rhs.columnNumber
