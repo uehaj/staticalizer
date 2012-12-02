@@ -1,4 +1,19 @@
-package staticalizer
+/*
+ * Copyright 2012 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jggug.kobo.staticalizer
 
 import groovy.util.GroovyTestCase
 
@@ -16,7 +31,7 @@ class TypeLoggingTest extends GroovyTestCase {
   void testMethodArg() {
     patchFile.delete()
     TestUtils.executeCommandOk([*groovyCommand, """
-              import staticalizer.transform.WithTypeLogging
+              import org.jggug.kobo.staticalizer.transform.WithTypeLogging
               class X {
                 @WithTypeLogging
                 int foo(i) {
@@ -34,7 +49,7 @@ class TypeLoggingTest extends GroovyTestCase {
   void testMethodArgs() {
     patchFile.delete()
     TestUtils.executeCommandOk([*groovyCommand, """
-              import staticalizer.transform.WithTypeLogging
+              import org.jggug.kobo.staticalizer.transform.WithTypeLogging
               class X {
                 @WithTypeLogging
                 int foo(i, j, k, s) {
@@ -51,7 +66,7 @@ class TypeLoggingTest extends GroovyTestCase {
 
   void testMethodPartallyTypeSpecifiedArgs() {
     TestUtils.executeCommandOk([*groovyCommand, """
-              import staticalizer.transform.WithTypeLogging
+              import org.jggug.kobo.staticalizer.transform.WithTypeLogging
               class X {
                 @WithTypeLogging
                 int foo(int i, j, double k, s) {
@@ -69,7 +84,7 @@ class TypeLoggingTest extends GroovyTestCase {
   void testClosureWithImplicitIt() {
     patchFile.delete()
     TestUtils.executeCommandOk([*groovyCommand, """
-              import staticalizer.transform.WithTypeLogging
+              import org.jggug.kobo.staticalizer.transform.WithTypeLogging
               class Z {
                 @WithTypeLogging
                 def baz() {
@@ -87,7 +102,7 @@ class TypeLoggingTest extends GroovyTestCase {
   void testClosureWithOneArg() {
     patchFile.delete()
     TestUtils.executeCommandOk([*groovyCommand, """
-              import staticalizer.transform.WithTypeLogging
+              import org.jggug.kobo.staticalizer.transform.WithTypeLogging
               class Z {
                 @WithTypeLogging
                 def baz() {
@@ -105,7 +120,7 @@ class TypeLoggingTest extends GroovyTestCase {
   void testClosureArgs() {
     patchFile.delete()
     TestUtils.executeCommandOk([*groovyCommand, """
-              import staticalizer.transform.WithTypeLogging
+              import org.jggug.kobo.staticalizer.transform.WithTypeLogging
               class Z {
                 @WithTypeLogging
                 def baz() {
@@ -123,7 +138,7 @@ class TypeLoggingTest extends GroovyTestCase {
   void testClosurePartiallyTypeCpecifiedArgs() {
     patchFile.delete()
     TestUtils.executeCommandOk([*groovyCommand, """
-              import staticalizer.transform.WithTypeLogging
+              import org.jggug.kobo.staticalizer.transform.WithTypeLogging
               class Z {
                 @WithTypeLogging
                 def baz() {
@@ -141,7 +156,7 @@ class TypeLoggingTest extends GroovyTestCase {
   void testReturn() {
     patchFile.delete()
     TestUtils.executeCommandOk([*groovyCommand, """
-              import staticalizer.transform.WithTypeLogging
+              import org.jggug.kobo.staticalizer.transform.WithTypeLogging
               class Y {
                 @WithTypeLogging
                 def bar() {
@@ -159,7 +174,7 @@ class TypeLoggingTest extends GroovyTestCase {
   void testReturnTypeSpecified() {
     patchFile.delete()
     TestUtils.executeCommandOk([*groovyCommand, """
-              import staticalizer.transform.WithTypeLogging
+              import org.jggug.kobo.staticalizer.transform.WithTypeLogging
               class Y {
                 @WithTypeLogging
                 int bar() {
@@ -176,7 +191,7 @@ class TypeLoggingTest extends GroovyTestCase {
   void testReturnOfTwoMethods() {
     patchFile.delete()
     TestUtils.executeCommandOk([*groovyCommand, """
-              import staticalizer.transform.WithTypeLogging
+              import org.jggug.kobo.staticalizer.transform.WithTypeLogging
               class Y {
                 @WithTypeLogging
                 def foo() {
@@ -197,11 +212,11 @@ class TypeLoggingTest extends GroovyTestCase {
     assert result[1] == '+// TODO: Change return type: java.lang.Integer foo(...)'
     assert result[3] == '+// TODO: Change return type: java.math.BigDecimal bar(...)'
   }
-  
+
   void testReturnTypeSpecifiedAndNotSpecified() {
     patchFile.delete()
     TestUtils.executeCommandOk([*groovyCommand, """
-              import staticalizer.transform.WithTypeLogging
+              import org.jggug.kobo.staticalizer.transform.WithTypeLogging
               class Y {
                 @WithTypeLogging
                 def foo() {

@@ -1,4 +1,19 @@
-package staticalizer
+/*
+ * Copyright 2012 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jggug.kobo.staticalizer
 
 import groovy.transform.*
 import java.text.SimpleDateFormat
@@ -92,36 +107,44 @@ class TypeInfoRegistry {
     output.write(str+"\n")
   }
 
+  void emitHeader(Writer output, String fileName) {
+    def changedFileName = fileName + CHANGED_FILENAME_POSTFIX
+    def time = fileTime(fileName)
+    emit(output, "--- "+fileName+" "+time)
+    emit(output, "+++ "+changedFileName+" "+time)
+  }
+
+  void emitDiffs(Writer output, Set<List> diffs, MethodOrClosureDecl decl, int ofs) {
+    emit(output, "@@ -${decl.lineNumber+1},0 +${decl.lineNumber+1+ofs},${diffs.size()} @@")
+    diffs.each {
+      if (it instanceof Arguments) {
+        if (decl.methodName == CLOSURE_MARKER) {
+          emit(output, "+// TODO: Change closure argument type: { "+composeArgs(it)+" -> .. }")
+        }
+        else {
+          emit(output, "+// TODO: Change argument type: "+decl.methodName+"("+composeArgs(it)+")")
+        }
+      }
+      else if (it instanceof String) {
+        emit(output, "+// TODO: Change return type: "+it+" "+decl.methodName+"(...)")
+      }
+    }
+  }
+
   void emitDiff(Writer output) {
     String fileName = null
     int ofs
 
-    typeInfoMap.keySet().sort().each { decl ->
+    typeInfoMap.keySet().sort().each { MethodOrClosureDecl decl ->
       if (fileName != decl.sourceFileName) {
         fileName = decl.sourceFileName
-        def changedFileName = fileName + CHANGED_FILENAME_POSTFIX
-        def time = fileTime(fileName)
-        emit(output, "--- "+fileName+" "+time)
-        emit(output, "+++ "+changedFileName+" "+time)
+        emitHeader(output, fileName)
         ofs = 0
       }
 
       def diffs = typeInfoMap[decl]
-      emit(output, "@@ -${decl.lineNumber+1},0 +${decl.lineNumber+1+ofs},${diffs.size()} @@")
+      emitDiffs(output, diffs, decl, ofs)
       ofs += diffs.size()
-      diffs.each {
-        if (it instanceof Arguments) {
-          if (decl.methodName == CLOSURE_MARKER) {
-            emit(output, "+// TODO: Change closure argument type: { "+composeArgs(it)+" -> .. }")
-          }
-          else {
-            emit(output, "+// TODO: Change argument type: "+decl.methodName+"("+composeArgs(it)+")")
-          }
-        }
-        else if (it instanceof String) {
-          emit(output, "+// TODO: Change return type: "+it+" "+decl.methodName+"(...)")
-        }
-      }
     }
     println """Patch file '${TypeLogger.PATCH_FILENAME}' generated. Apply the patch by:
  % (cd /; patch -b -p0) < ${TypeLogger.PATCH_FILENAME}"""
