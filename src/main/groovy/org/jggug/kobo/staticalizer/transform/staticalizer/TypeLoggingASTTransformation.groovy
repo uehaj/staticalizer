@@ -57,30 +57,24 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
       def method = transform(exp.getMethod())
       def args = transform(exp.getArguments())
       def result = new MethodCallExpression(object, method, args)
-    println "[2]"
       return result
     }
     else if (exp.class == ClosureExpression) {
       visitClosureExpression(exp)
-      println "[3]"
       // visitの呼び出しを単に分配する(なぜか自動的には分配されないため)
       Statement code = exp.getCode()
       if (code != null) code.visit(this)
-    println "[4]"
       return exp
     }
     else if (exp.class == ConstructorCallExpression) {
-    println "[5]"
       // transformExpressionに分配する
       return exp.transformExpression(this)
     }
-    println "[6]"
     return exp.transformExpression(this)
   }
   
   @Override
   void visitClosureExpression(ClosureExpression closureNode) {
-    println "visitClosureExpression($closureNode)"
     insertClosureParameterLoggingAst(closureNode)
     closureNode.getCode().visit(this);
   }
@@ -89,7 +83,6 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
 
   @Override
   void visitMethod(MethodNode method) {
-    println "visitMethod($method)"
     savedMethodForHandleReturn = method
     insertMethodParameterLoggingAst(method)
     super.visitMethod(method)
@@ -124,6 +117,7 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
         new ArgumentListExpression(
           new ConstantExpression(sourceUnit.name),
           new ConstantExpression(method.lineNumber),
+          new ConstantExpression(method.columnNumber),
           new ConstantExpression(method.name),
           createMethodParameterTypeInfoList(method)
         )
@@ -140,6 +134,7 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
         new ArgumentListExpression(
           new ConstantExpression(sourceUnit.name),
           new ConstantExpression(closure.lineNumber),
+          new ConstantExpression(closure.columnNumber),
           createClosureParameterTypeInfoList(closure)
         )
       )
@@ -148,7 +143,7 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
 
   private ListExpression createMethodParameterTypeInfoList(MethodNode method) {
     /* TypeLogger.logMethodArgs(
-         sourceFileName, lineNumber, methodName,
+         sourceFileName, lineNumber, columnNumber, methodName,
            [ ..., ..., ..., ] <== generate this
        ) */
     def result = new ListExpression()
@@ -162,7 +157,7 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
   
   private ListExpression createClosureParameterTypeInfoList(ClosureExpression closureNode) {
     /* TypeLogger.logClosureArgs(
-         sourceFileName, lineNumber,
+         sourceFileName, lineNumber, columnNumber,
            [ ..., ..., ..., ] <== generate this
        ) */
     def result = new ListExpression()
@@ -183,7 +178,7 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
   }
   
   private ListExpression createParameterTypeInfo(String paramName) {
-    /* TypeLogger.logArgs(sourceFileName, lineNumber, methodName,
+    /* TypeLogger.logArgs(sourceFileName, lineNumber, columnNumber, methodName,
          [
            [ ${paramName}.getClass().getName(), "${paramName}" ], <== generate this
              ...,
@@ -208,10 +203,6 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
 
   @Override
   void visitReturnStatement(ReturnStatement statement) {
-    println "---"
-    println savedMethodForHandleReturn.returnType
-    println savedMethodForHandleReturn.returnType.name
-    println "---"
     if (savedMethodForHandleReturn.returnType.name == "java.lang.Object") {
       statement.setExpression(createReturnTypeLoggingAst(statement.getExpression()));
     }
@@ -220,13 +211,13 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
 
   Expression createReturnTypeLoggingAst(Expression expression) {
     /* TypeLogger.logReturn(...) <== generate this */
-    println "+++"
     return new StaticMethodCallExpression(
       new ClassNode(org.jggug.kobo.staticalizer.TypeLogger),
       "logReturn",
       new ArgumentListExpression(
         new ConstantExpression(sourceUnit.name),
         new ConstantExpression(savedMethodForHandleReturn.lineNumber),
+        new ConstantExpression(savedMethodForHandleReturn.columnNumber),
         new ConstantExpression(savedMethodForHandleReturn.name),
         expression
       )

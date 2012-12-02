@@ -236,4 +236,23 @@ class TypeLoggingTest extends GroovyTestCase {
     assert result.size() == 1
     assert result[0] == '+// TODO: Change return type: java.lang.Integer foo(...)'
   }
+  
+  void testMethodSameLine() {
+    patchFile.delete()
+    TestUtils.executeCommandOk([*groovyCommand, """
+              import org.jggug.kobo.staticalizer.transform.WithTypeLogging
+              class X {
+                @WithTypeLogging def foo(i) {0}; @WithTypeLogging def bar(i) {0}
+              }
+              X x = new X()
+              x.foo(3)
+              x.bar(4)
+        """])
+
+    def result = lastLines(patchFile.text, 4)
+    assert result.size() == 4
+    assert result[1] == '+// TODO: Change argument type: bar(java.lang.Integer i)'
+    assert result[3] == '+// TODO: Change argument type: foo(java.lang.Integer i)'
+  }
+  
 }

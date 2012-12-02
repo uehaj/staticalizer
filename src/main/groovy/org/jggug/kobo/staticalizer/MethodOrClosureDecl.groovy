@@ -19,14 +19,23 @@ import groovy.transform.*
 
 @Canonical
 class MethodOrClosureDecl implements Comparable {
+  
   String sourceFileName
+  
   int lineNumber
+  
+  int cloumnNumber
+  
   String methodName
+  
   int compareTo(rhs) {
     if (rhs == null) { throw new NullPointerException() }
     if (sourceFileName == rhs.sourceFileName) {
       if (lineNumber == rhs.lineNumber) {
-        return methodName <=> rhs.methodName
+        if (columnNumber == rhs.columnNumber) {
+          return methodName <=> rhs.methodName
+        }
+        else return columnNumber <=> rhs.columnNumber
       }
       else return lineNumber <=> rhs.lineNumber
     }

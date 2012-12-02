@@ -37,20 +37,20 @@ class TypeLogger {
     }
   }
   
-  static Object logMethodArgs(String sourceFileName, int sourceLineNum, String methodName, List args) {
+  static Object logMethodArgs(String sourceFileName, int sourceLineNum, int sourceColumnNum, String methodName, List args) {
     initialize()
-    registry.addMethodArgsTypeLog(sourceFileName, sourceLineNum, methodName, args)
+    registry.addMethodArgsTypeLog(sourceFileName, sourceLineNum, sourceColumnNum, methodName, args)
   }
 
-  static Object logClosureArgs(String sourceFileName, int sourceLineNum, List args) {
+  static Object logClosureArgs(String sourceFileName, int sourceLineNum, int sourceColumnNum, List args) {
     initialize()
-    registry.addClosureArgsTypeLog(sourceFileName, sourceLineNum, args)
+    registry.addClosureArgsTypeLog(sourceFileName, sourceLineNum, sourceColumnNum, args)
   }
   
-  static Object logReturn(String sourceFileName, int sourceLineNum, String methodName, Object returnValue) {
+  static Object logReturn(String sourceFileName, int sourceLineNum, int sourceColumnNum, String methodName, Object returnValue) {
     String returnType = returnValue.getClass().getName()
     initialize()
-    registry.addReturnTypeLog(sourceFileName, sourceLineNum, methodName, returnType)
+    registry.addReturnTypeLog(sourceFileName, sourceLineNum, sourceColumnNum, methodName, returnType)
     return returnValue
   }
 

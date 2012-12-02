@@ -24,18 +24,18 @@ class TypeLogRegistry {
     return typeLogMap
   }
 
-  void addMethodArgsTypeLog(String sourceFileName, int lineNumber, String methodName, List<List<String>> args) {
-    def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, methodName)
+  void addMethodArgsTypeLog(String sourceFileName, int lineNumber, int columnNumber, String methodName, List<List<String>> args) {
+    def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, columnNumber, methodName)
     typeLogMap.get(decl).add(new Arguments(args))
   }
 
-  void addClosureArgsTypeLog(String sourceFileName, int lineNumber, List<List<String>> args) {
-    def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, CLOSURE_MARKER)
+  void addClosureArgsTypeLog(String sourceFileName, int lineNumber, int columnNumber, List<List<String>> args) {
+    def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, columnNumber, CLOSURE_MARKER)
     typeLogMap.get(decl).add(new Arguments(args))
   }
 
-  void addReturnTypeLog(String sourceFileName, int lineNumber, String methodName, String returnType) {
-    def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, methodName)
+  void addReturnTypeLog(String sourceFileName, int lineNumber, int columnNumber, String methodName, String returnType) {
+    def decl = new MethodOrClosureDecl(sourceFileName, lineNumber, columnNumber, methodName)
     typeLogMap.get(decl).add(returnType)
   }
 
