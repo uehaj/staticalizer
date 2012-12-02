@@ -55,7 +55,7 @@ class PatchEmitter {
     emit("@@ -${decl.lineNumber+1},0 +${decl.lineNumber+1+ofs},${diffs.size()} @@")
     diffs.each {
       if (it instanceof Arguments) {
-        if (decl.methodName == TypeInfoRegistry.CLOSURE_MARKER) {
+        if (decl.methodName == TypeLogRegistry.CLOSURE_MARKER) {
           emit("+// TODO: Change closure argument type: { "+composeArgs(it)+" -> .. }")
         }
         else {
@@ -68,18 +68,18 @@ class PatchEmitter {
     }
   }
 
-  void emitDiff(Map<MethodOrClosureDecl, Set<List>> typeInfoMap) {
+  void emitDiff(Map<MethodOrClosureDecl, Set<List>> typeLogMap) {
     String fileName = null
     int ofs = 0
 
-    typeInfoMap.keySet().sort().each { MethodOrClosureDecl decl ->
+    typeLogMap.keySet().sort().each { MethodOrClosureDecl decl ->
       if (fileName != decl.sourceFileName) {
         fileName = decl.sourceFileName
         emitHeader(fileName)
         ofs = 0
       }
 
-      def diffs = typeInfoMap[decl]
+      def diffs = typeLogMap[decl]
       emitDiffs(diffs, decl, ofs)
       ofs += diffs.size()
     }

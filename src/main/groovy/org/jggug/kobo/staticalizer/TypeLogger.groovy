@@ -21,12 +21,12 @@ class TypeLogger {
   
   static private boolean initialized = false
   
-  static private TypeInfoRegistry repo = new TypeInfoRegistry()
+  static private TypeLogRegistry registry = new TypeLogRegistry()
   
   static private shutdown() {
     new File(PATCH_FILENAME).withWriter { writer ->
       def emitter = new PatchEmitter(writer)
-      emitter.emitDiff(repo.typeInfoMap)
+      emitter.emitDiff(registry.typeLogMap)
     }
   }
   
@@ -39,18 +39,18 @@ class TypeLogger {
   
   static Object logMethodArgs(String sourceFileName, int sourceLineNum, String methodName, List args) {
     initialize()
-    repo.addMethodArgsTypeInfo(sourceFileName, sourceLineNum, methodName, args)
+    registry.addMethodArgsTypeLog(sourceFileName, sourceLineNum, methodName, args)
   }
 
   static Object logClosureArgs(String sourceFileName, int sourceLineNum, List args) {
     initialize()
-    repo.addClosureArgsTypeInfo(sourceFileName, sourceLineNum, args)
+    registry.addClosureArgsTypeLog(sourceFileName, sourceLineNum, args)
   }
   
   static Object logReturn(String sourceFileName, int sourceLineNum, String methodName, Object returnValue) {
     String returnType = returnValue.getClass().getName()
     initialize()
-    repo.addReturnTypeInfo(sourceFileName, sourceLineNum, methodName, returnType)
+    registry.addReturnTypeLog(sourceFileName, sourceLineNum, methodName, returnType)
     return returnValue
   }
 
