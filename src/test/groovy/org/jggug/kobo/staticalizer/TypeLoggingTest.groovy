@@ -16,7 +16,7 @@
 package org.jggug.kobo.staticalizer
 
 /**
- * @author UEHARA Junji(uehaj@jggug.org)
+ * @author <a href="mailto:uehaj@jggug.org">UEHARA Junji</a>
  */
 import groovy.util.GroovyTestCase
 

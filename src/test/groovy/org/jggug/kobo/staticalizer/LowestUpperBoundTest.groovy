@@ -18,7 +18,7 @@ package org.jggug.kobo.staticalizer
 import groovy.util.GroovyTestCase
 
 /**
- * @author UEHARA Junji(uehaj@jggug.org)
+ * @author <a href="mailto:uehaj@jggug.org">UEHARA Junji</a>
  */
 class LowestUpperBoundTest extends GroovyTestCase {
   def groovyCommand = ["groovy", "-cp", "build/libs/staticalizer-0.1.jar", "-e"]
