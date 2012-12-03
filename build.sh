@@ -5,9 +5,9 @@ if [ -d ./build ]; then
 fi
 mkdir build
 mkdir build/classes
-mkdir build/lib
+mkdir build/libs
 
-groovyc -d build/classes src/main/groovy/staticalizer/TypeLogger.groovy src/main/groovy/staticalizer/transform/TypeLoggingASTTransformation.groovy src/main/groovy/staticalizer/transform/WithTypeLogging.groovy
+groovyc -d build/classes src/main/groovy/org/jggug/kobo/staticalizer/*.groovy src/main/groovy/org/jggug/kobo/staticalizer/transform/TypeLoggingASTTransformation.groovy src/main/groovy/org/jggug/kobo/staticalizer/transform/WithTypeLogging.groovy
 
 jar cf build/libs/staticalizer-0.1.jar -C build/classes .
 
