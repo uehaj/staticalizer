@@ -1,5 +1,48 @@
 #!/bin/sh
 
-DIRNAME=`dirname "$0"`
+resolve_symlink() {
+    local TARGET=$1
 
-groovy -cp $DIRNAME/../../build/libs/staticalizer-0.1.jar -e 'groovy.ui.GroovyMain2.main(args)' $*
+    # if target is symbolic link
+    if [ -L $TARGET ]; then
+        local ORIGINAL_FILEPATH=`readlink $TARGET`
+
+        # if original is specified as absolute path
+        if [ $(echo $ORIGINAL_FILEPATH | cut -c 1) = "/" ]; then
+            echo "$ORIGINAL_FILEPATH"
+        else
+            echo "$(dirname $TARGET)/$ORIGINAL_FILEPATH"
+        fi
+    else
+        echo "$TARGET"
+    fi
+}
+
+expand_path() {
+    local TARGET=$1
+    if [ -d "$TARGET" ]; then
+        echo $(cd $TARGET && pwd -P)
+    elif [ -f "$TARGET" ]; then
+        local TARGET_RESOLVED=$(resolve_symlink $TARGET)
+        local FILENAME=$(basename $TARGET_RESOLVED)
+        local DIR_EXPANDED="$(expand_path $(dirname $TARGET_RESOLVED))"
+        echo "$DIR_EXPANDED/$FILENAME"
+    else
+        echo "$TARGET"
+    fi
+}
+
+if [ "$STATICALIZER_HOME" = "" ]; then
+    STATICALIZER_HOME="$(dirname $(dirname $(expand_path $0)))"
+else
+    STATICALIZER_HOME=`expand_path "$STATICALIZER_HOME"`
+fi
+ls $STATICALIZER_HOME/lib/staticalizer-*.jar >/dev/null 2>&1
+if [ ! $? -eq 0 ]; then
+    error_log "ERROR: Not found a valid STATICALIZER_HOME directory: $STATICALIZER_HOME"
+    exit 1
+fi
+
+export CLASSPATH=$STATICALIZER_HOME/lib/staticalizer-@STATICALIZER_VERSION@.jar:$CLASSPATH
+groovy -e 'groovy.ui.GroovyMain2.main(args)' $*
+

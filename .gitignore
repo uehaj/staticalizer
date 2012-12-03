@@ -6,3 +6,4 @@ staticalizer.patch
 test*.groovy
 *.groovy.orig
 #.*#
+.gradle

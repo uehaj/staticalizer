@@ -41,18 +41,19 @@ class TypeLogger {
   }
   
   static Object logMethodArgs(String sourceFileName, int sourceLineNum, int sourceColumnNum, String methodName, List args) {
+    // TODO: echoback parameters if some environment variable or system property set.
     initialize()
-    // souceLineNum is +1ed because of unknown reason, so decrement 1.
     registry.addMethodArgsTypeLog(sourceFileName, sourceLineNum-1, sourceColumnNum, methodName, args)
   }
 
   static Object logClosureArgs(String sourceFileName, int sourceLineNum, int sourceColumnNum, List args) {
+    // TODO: echoback parameters if some environment variable or system property set.
     initialize()
-    // souceLineNum is +1ed because of unknown reason, so decrement 1.
     registry.addClosureArgsTypeLog(sourceFileName, sourceLineNum-1, sourceColumnNum, args)
   }
   
   static Object logReturn(String sourceFileName, int sourceLineNum, int sourceColumnNum, String methodName, Object returnValue) {
+    // TODO: echoback parameters if some environment variable or system property set.
     String returnType = returnValue.getClass().getName()
     initialize()
     registry.addReturnTypeLog(sourceFileName, sourceLineNum-1, sourceColumnNum, methodName, returnType)

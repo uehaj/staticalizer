@@ -1,3 +1,7 @@
+// -*- groovy -*-
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
 apply plugin: 'groovy'
 apply plugin: 'maven'
 
@@ -55,3 +59,51 @@ uploadArchives {
         }        
     }
 }
+
+task dist(dependsOn: ['distBin', 'distSrc'])
+
+def executablesSpec = copySpec {
+    into('lib') {
+        from "$buildDir/libs"
+    }
+    into('bin') {
+        fileMode = 0755
+        from "$projectDir/src/main/bin"
+        filter(ReplaceTokens, tokens: ["STATICALIZER_VERSION": project.version])
+    }
+}
+
+def srcSpec = copySpec {
+    from("$projectDir") {
+        include "build.gradle"
+        include "gradle.properties"
+    }
+    into("src") {
+        from "$projectDir/src"
+    }
+    from("$projectDir") {
+        fileMode = 0755
+        include "gradlew*"
+    }
+    into("gradle") {
+        from "$projectDir/gradle"
+    }
+}
+
+task distBin(type: Zip, dependsOn: 'jar') {
+    baseName = project.name
+    into "$baseName-$version"
+    with executablesSpec
+}
+
+task distSrc(type: Zip) {
+    baseName = project.name
+    classifier = 'src'
+    into "$baseName-$version"
+    with srcSpec
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.3'
+}
+
