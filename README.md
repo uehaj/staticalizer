@@ -15,7 +15,7 @@ But if you have tons of dynamic groovy code, it is not easy to modify all of tho
 Install
 -------
 
-Download source or binary distribution of staticalizer from (https://github.com/uehaj/staticalizer/downloads "here"),
+Download source or binary distribution of staticalizer from [here](https://github.com/uehaj/staticalizer/downloads),
 and extract it anywhre. We call the directory 'STATICALIZER_HOME' (don't neccessary to set it as environment variable).
 
 And add 'STATICALIZER_HOME/bin' directory to your PATH environment variable.
@@ -68,10 +68,10 @@ hello.groovy is modified to:
 
 Please modify declaration of method foo by hand.
     
-Annotations
+Annotation
 ------------------
 
-Staticalize provides following local AST transformation annotations:
+Staticalize provides following local AST transformation annotation:
 
     staticalizer.transform.WithTypeLogging
 
@@ -116,7 +116,7 @@ You can also copy the jar into .groovy/lib directry.
 License
 ----------
 
-Licensed under the [Apache License, Version 2.0][Apache]
+This software is licensed under the [Apache License, Version 2.0][Apache].
  
 [Apache]: http://www.apache.org/licenses/LICENSE-2.0
 
