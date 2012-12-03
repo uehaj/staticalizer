@@ -68,8 +68,8 @@ hello.groovy is modified to:
 
 Please modify declaration of method foo by hand.
     
-Annotation
-------------------
+AST Transformation Annotation
+------------------------------------
 
 Staticalize provides following local AST transformation annotation:
 
