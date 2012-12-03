@@ -9,7 +9,7 @@ Install
 Download source or binary distribution of staticalizer from (https://github.com/uehaj/staticalizer/downloads "here"),
 and extract it anywhre. We call the directory 'STATICALIZER_HOME' (don't neccessary to set it as environment variable).
 
-Add STATICALIZER_HOME/bin to your PATH environment variable.
+And add 'STATICALIZER_HOME/bin' directory to your PATH environment variable.
 
 Getting started
 ------------------
@@ -23,6 +23,9 @@ So you can spacify any groovy options if you want.
     def foo(n) {
      return n*n
     }
+    println foo(2)
+    println foo(10.0d)
+    
     $ staticallizer hello.groovy
     4
     100.0
@@ -30,7 +33,7 @@ So you can spacify any groovy options if you want.
      % (cd /; patch -b -p0) < staticalizer.patch
 
 Then 'staticalizer.patch' file is generated at current directory.
-Verity it.
+Verify it.
 
     % cat staticalizer.patch
     --- /work/staticalizer/hello.groovy 2012-48-04 07:48:40.000000000 +0900
@@ -55,7 +58,9 @@ hello.groovy is modified to:
     }
     println foo(2)
     println foo(10.0d) 
-  
+
+Please modify declaration of method foo by hand.
+    
 Annotations
 ------------------
 
@@ -63,7 +68,7 @@ Staticalize provides following local AST transformation annotations:
 
     staticalizer.transform.WithTypeLogging
 
-You can use this annotation directly instead of use STATICALIZER_HOME/bin/staticalizer script.
+You can use this annotation directly instead of using STATICALIZER_HOME/bin/staticalizer script.
 You can specify this annotations to method:
 
     import org.jggug.kobo.staticalizer.transform.WithTypeLogging
@@ -84,17 +89,22 @@ or specify it on class.
       }
     }
 
-this annotation makes record parameter types and return value types and when the program exit,
-put it those information onto 'staticalizer.patch' file.
+This annotation makes the specified method to logging types of method or closure arguments and type of return value of method internally.
+When the program exit, those logged information are writen to 'staticalizer.patch' file.
 
-Behind the food, STATICALIZER_HOME/bin/staticalizer script just apply
-this AST transformation on the script to run.
+Behind the hood, STATICALIZER_HOME/bin/staticalizer script just apply this AST transformation on the script to run.
 
 To use this annocations, you have to put the jar file of
-STATICALIZER_HOME/lib/staticalizer-x.y.jar into your CLASSPATH or speify it on -cp option.
-e.g.
+STATICALIZER_HOME/lib/staticalizer-x.y.jar into your CLASSPATH
+
+    $ export CLASSPATH=STATICALIZER_HOME/lib/staticalizer-0.1.jar
+    groovy test.groovy
+
+or speify it on -cp option. e.g.
 
     groovy -cp STATICALIZER_HOME/lib/staticalizer-x.y.jar test.groovy
+
+You can also copy the jar into .groovy/lib directry.
  
 License
 ----------
