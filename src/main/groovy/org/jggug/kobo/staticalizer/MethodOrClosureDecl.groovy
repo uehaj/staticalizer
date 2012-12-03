@@ -18,7 +18,7 @@ package org.jggug.kobo.staticalizer
 import groovy.transform.*
 
 /**
- * @author UEHARA Junji(uehaj@jggug.org)
+ * @author <a href="mailto:uehaj@jggug.org">UEHARA Junji</a>
  */
 @Canonical
 class MethodOrClosureDecl implements Comparable {

@@ -24,7 +24,7 @@ import org.codehaus.groovy.transform.*
 import org.codehaus.groovy.syntax.SyntaxException;
 
 /**
- * @author UEHARA Junji(uehaj@jggug.org)
+ * @author <a href="mailto:uehaj@jggug.org">UEHARA Junji</a>
  */
 @GroovyASTTransformation(phase=CompilePhase.SEMANTIC_ANALYSIS)
 public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer implements ASTTransformation {

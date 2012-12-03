@@ -19,7 +19,7 @@ import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.tools.WideningCategories
 
 /**
- * @author UEHARA Junji(uehaj@jggug.org)
+ * @author <a href="mailto:uehaj@jggug.org">UEHARA Junji</a>
  */
 class TypeLogRegistry {
   
