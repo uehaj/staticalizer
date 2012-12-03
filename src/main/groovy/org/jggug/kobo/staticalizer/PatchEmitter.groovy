@@ -51,10 +51,6 @@ class PatchEmitter {
     emit("+++ "+changedFileName+" "+time)
   }
 
-  static String composeArgs(Arguments args) {
-    args.arguments.collect{it[0]+" "+it[1]}.join(",")
-  }
-  
   void emitDiffs(TypeLogRegistry registry, MethodOrClosureDecl decl, int ofs) {
     emit("@@ -${decl.lineNumber+1},0 +${decl.lineNumber+1+ofs},1 @@")
     switch (decl.type) {
