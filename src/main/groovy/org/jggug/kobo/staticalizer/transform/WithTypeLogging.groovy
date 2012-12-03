@@ -25,7 +25,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass
  * @author <a href="mailto:uehaj@jggug.org">UEHARA Junji</a>
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target([ElementType.METHOD, ElementType.TYPE, ElementType.METHOD])
+@Target([ElementType.METHOD, ElementType.TYPE, ElementType.CONSTRUCTOR])
 @GroovyASTTransformationClass(["org.jggug.kobo.staticalizer.transform.TypeLoggingASTTransformation"])
 public @interface WithTypeLogging {
 }

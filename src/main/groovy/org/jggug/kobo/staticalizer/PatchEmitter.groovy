@@ -58,7 +58,8 @@ class PatchEmitter {
       emit("+// TODO: Change closure argument type: { "+registry.params(decl)+" -> .. }")
       break;
     case "M": // Method argument type
-      emit("+// TODO: Change method argument type: "+decl.methodName+"("+registry.params(decl)+")")
+      def target =  (decl.methodName == "<init>") ? "constructor" : "method"
+      emit("+// TODO: Change $target argument type: "+decl.methodName+"("+registry.params(decl)+")")
       break;
     case "R": // Returning type of method
       emit("+// TODO: Change return type: "+registry.returnType(decl)+" "+decl.methodName+"(...)")

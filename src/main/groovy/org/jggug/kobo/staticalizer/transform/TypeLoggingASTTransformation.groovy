@@ -43,12 +43,18 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
     AnnotatedNode node = (AnnotatedNode) nodes[1]
     ClassNode withTypeLoggingClassNode = new ClassNode(WithTypeLogging)
     if (node instanceof ClassNode) {
-      // find all methods annotated with @WithTypeLogging
-      node.getMethods().each { MethodNode method ->
-        println "here"+method
+      // find all methods
+      node.methods.each { MethodNode method ->
+        println "here1"+method
         visitMethod(method);
       }
+      // find all constructors
+      node.declaredConstructors.each { ConstructorNode method ->
+        visitMethod(method);
+      }
+      
     } else if (node instanceof MethodNode) {
+      println "node($node) is instanceof MethodNode"
       visitMethod(node);
     } else {
       source.addError(new SyntaxException("Unsupported node type", node.getLineNumber(), node.getColumnNumber()));
