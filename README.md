@@ -3,15 +3,16 @@ Staticalizer
 
 Staticalizer is a tool to support static groovy.
 
-Static groovy is easy to use and powerful way of to get the benefit of static typing.
+Groovy 2.0's static groovy feature is easy to use and powerful way of to get the benefit of static typing.
 (Just put @CompileStatic!)
 
-But if you have tons of dynamic groovy code, it is not easy to modify all of those code to be static. Because:
+But if you have tons of dynamic typed groovy code, it is not easy to modify all of those code to be static. Because:
 
 - It is not obvious the type of method parameter. Some method parameter might have different type with each invocation. In those case, you have to specify Loweest Upper Bound type among those types.
 - You have to trace the call chain trace if the value is supplied by other method.
 
- 
+By using staticalizer, you can feedback the information of dynamic type of method/closure parameters and method return type information to source code. (partially by hand)
+
 Install
 -------
 
@@ -71,7 +72,7 @@ Please modify declaration of method foo by hand.
 AST Transformation Annotation
 ------------------------------------
 
-Staticalize provides following local AST transformation annotation:
+Staticalizer provides following local AST transformation annotation:
 
     staticalizer.transform.WithTypeLogging
 
