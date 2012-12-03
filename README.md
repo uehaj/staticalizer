@@ -2,6 +2,15 @@ Staticalizer
 ======================
 
 Staticalizer is a tool to support static groovy.
+
+Static groovy is easy to use and powerful way of to get the benefit of static typing.
+(Just put @CompileStatic!)
+
+But if you have tons of dynamic groovy code, it is not easy to modify all of those code to be static. Because:
+
+- It is not obvious the type of method parameter. Some method parameter might have different type with each invocation. In those case, you have to specify Loweest Upper Bound type among those types.
+- You have to trace the call chain trace if the value is supplied by other method.
+
  
 Install
 -------
@@ -13,8 +22,6 @@ And add 'STATICALIZER_HOME/bin' directory to your PATH environment variable.
 
 Getting started
 ------------------
-
-    % staticalizer hello.groovy
 
 Staticalizer command line is compatible to groovy command.
 So you can spacify any groovy options if you want.
