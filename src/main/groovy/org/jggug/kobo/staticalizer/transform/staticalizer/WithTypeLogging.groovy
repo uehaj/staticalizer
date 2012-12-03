@@ -22,10 +22,10 @@ import java.lang.annotation.Target
 import org.codehaus.groovy.transform.GroovyASTTransformationClass
 
 /**
- * @author UEHARA Junji(uehaj@jggug.org)
+ * @author <a href="mailto:uehaj@jggug.org">UEHARA Junji</a>
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target([ElementType.METHOD])
+@Target([ElementType.METHOD, ElementType.TYPE, ElementType.METHOD])
 @GroovyASTTransformationClass(["org.jggug.kobo.staticalizer.transform.TypeLoggingASTTransformation"])
 public @interface WithTypeLogging {
 }

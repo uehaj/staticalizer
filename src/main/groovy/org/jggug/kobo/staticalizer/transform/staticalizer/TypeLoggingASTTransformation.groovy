@@ -21,13 +21,13 @@ import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.*
 import org.codehaus.groovy.control.*
 import org.codehaus.groovy.transform.*
+import org.codehaus.groovy.syntax.SyntaxException;
 
 /**
  * @author UEHARA Junji(uehaj@jggug.org)
  */
 @GroovyASTTransformation(phase=CompilePhase.SEMANTIC_ANALYSIS)
 public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer implements ASTTransformation {
-  //public class TypeLoggingASTTransformation extends ClassCodeVisitorSupport implements ASTTransformation {
 
   SourceUnit sourceUnit = sourceUnit
 
@@ -39,16 +39,20 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
   @Override
   public void visit(ASTNode[] nodes, SourceUnit sourceUnit) {
     this.sourceUnit = sourceUnit
-    def methodNode = nodes[1]
-    visitMethod((MethodNode) methodNode);
-    // followings are for global ast transformation
-    // List methods = sourceUnit.getAST()?.getMethods()
-    // // find all methods annotated with @WithTypeLogging
-    // methods.findAll { MethodNode method ->
-    //   method.getAnnotations(new ClassNode(WithTypeLogging))
-    // }.each { MethodNode method ->
-    //   insertParameterLoggingAst(method)
-    // }
+
+    AnnotatedNode node = (AnnotatedNode) nodes[1]
+    ClassNode withTypeLoggingClassNode = new ClassNode(WithTypeLogging)
+    if (node instanceof ClassNode) {
+      // find all methods annotated with @WithTypeLogging
+      node.getMethods().each { MethodNode method ->
+        println "here"+method
+        visitMethod(method);
+      }
+    } else if (node instanceof MethodNode) {
+      visitMethod(node);
+    } else {
+      source.addError(new SyntaxException("Unsupported node type", node.getLineNumber(), node.getColumnNumber()));
+    }
   }
 
   @Override

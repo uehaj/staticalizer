@@ -17,6 +17,21 @@ dependencies {
 
 test.dependsOn jar
 
+task writeNewPom << {
+    pom {
+        project {
+            inceptionYear '2012'
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+        }
+    }.writeTo("$buildDir/newpom.xml")
+}
+
 configurations {
     deployerJars
 }
