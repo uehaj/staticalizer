@@ -45,6 +45,9 @@ class PatchEmitter {
   }
 
   void emitHeader(String fileName) {
+    if (fileName.startsWith('file:/')) {
+      fileName = fileName.replaceAll(/^file:/, '')
+    }
     def changedFileName = fileName + CHANGED_FILENAME_POSTFIX
     def time = fileTime(fileName)
     emit("--- "+fileName+" "+time)

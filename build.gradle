@@ -11,6 +11,7 @@ version = '0.1'
 
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.0.0'
+    compile "commons-cli:commons-cli:1.2"
     groovy 'org.codehaus.groovy:groovy:2.0.0'
     testCompile 'junit:junit:4.7'
 }

@@ -42,7 +42,8 @@ class TypeLogger {
   
   static Object logMethodArgs(String sourceFileName, int sourceLineNum, int sourceColumnNum, String methodName, List args) {
     initialize()
-    registry.addMethodArgsTypeLog(sourceFileName, sourceLineNum, sourceColumnNum, methodName, args)
+    // souceLineNum is +1ed because of unknown reason, so decrement 1.
+    registry.addMethodArgsTypeLog(sourceFileName, sourceLineNum-1, sourceColumnNum, methodName, args)
   }
 
   static Object logClosureArgs(String sourceFileName, int sourceLineNum, int sourceColumnNum, List args) {
@@ -54,7 +55,7 @@ class TypeLogger {
   static Object logReturn(String sourceFileName, int sourceLineNum, int sourceColumnNum, String methodName, Object returnValue) {
     String returnType = returnValue.getClass().getName()
     initialize()
-    registry.addReturnTypeLog(sourceFileName, sourceLineNum, sourceColumnNum, methodName, returnType)
+    registry.addReturnTypeLog(sourceFileName, sourceLineNum-1, sourceColumnNum, methodName, returnType)
     return returnValue
   }
 }
