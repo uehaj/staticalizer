@@ -45,7 +45,6 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
     if (node instanceof ClassNode) {
       // find all methods
       node.methods.each { MethodNode method ->
-        println "here1"+method
         visitMethod(method);
       }
       // find all constructors
@@ -54,7 +53,6 @@ public class TypeLoggingASTTransformation extends ClassCodeExpressionTransformer
       }
       
     } else if (node instanceof MethodNode) {
-      println "node($node) is instanceof MethodNode"
       visitMethod(node);
     } else {
       source.addError(new SyntaxException("Unsupported node type", node.getLineNumber(), node.getColumnNumber()));
