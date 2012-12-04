@@ -6,29 +6,29 @@ Staticalizer is a tool to support using static groovy.
 Groovy 2.0's static groovy feature is easy to use and powerful way to get the benefit of static typing.
 (Just put @CompileStatic!)
 
-But if you have tons of dynamic typed groovy code, it is not easy to modify all of those code to be static.
+But if you have tons of dynamic typed groovy code, it is not easy to modify all of those codes to be static.
 Because:
 
-- The type of method parameter is not obvious. Some method parameter might be different type with each invocation. In those case, you have to specify Loweest Upper Bound type among those types.
+- The type of method parameter is not obvious. Some method parameter might be different type with each invocation. In those cases, you have to specify Lowest Upper Bound type among those types.
 - You have to trace the method calls chain if a value is supplied by other method.
 
-Basically Groovy's suport of type inference is not work with inter-method information.
-So omitted type of method parameters and the type of value which other method returns are can't be inffered.
-To put it the other way around, if method parameter types and method return type is be decided, type infference get a chance to work well.
+Basically Groovy's support of type inference is not work with inter-method information.
+So omitted type of method parameters and the type of value that other method returns are can't be inferred.
+To put it the other way around, if method parameter types and method return type is be decided, type inference get a chance to work well.
 
 By using staticalizer, you can feedback the information from runtime actual type of method/closure parameters and method return type information to source code. (Partially by hand.)
 
 Install & Settings
 ---------------------
 
-Download binary distribution of staticalizer jar (staticalizer-0.1-bin.jar) from [here](https://github.com/uehaj/staticalizer/downloads), and extract it anywhre. We call the directory 'STATICALIZER_HOME'. it is not neccessary to set that to environment variable.
+Download binary distribution of staticalizer jar (staticalizer-0.1-bin.jar) from [here](https://github.com/uehaj/staticalizer/downloads), and extract it anywhere. We call the directory 'STATICALIZER_HOME'. It is not necessary to set that to environment variable.
 
 And add 'STATICALIZER_HOME/bin' directory to your PATH environment variable.
 For example, if you extract staticalizer to /tool/staticalizer, set:
 
     export PATH=/tool/staticalizer/bin:${PATH}
 
-In addition, if you want to use annocation form, you have to put the jar file of
+In addition, if you want to use annotation form, you have to put the jar file of
 STATICALIZER_HOME/lib/staticalizer-x.y.jar into your CLASSPATH.
 
     $ export CLASSPATH=STATICALIZER_HOME/lib/staticalizer-0.1.jar
@@ -38,7 +38,7 @@ Getting started
 
 Let's start from using staticalizer command.
 The usage of staticalizer command is basically the same as usage of groovy command.
-You can spacify any groovy options if you want.
+You can specify any groovy options if you want.
 
     $ cat hello.groovy
     def foo(n) {
@@ -93,7 +93,7 @@ Like:
       return c(n, n)
     }
 
-Of course you would like to spefify @CompileStatic or @TypeChecked annotations.
+Of course you would like to specify @CompileStatic or @TypeChecked annotations.
 
     @CompileStatic
     Number foo(Number n) {
@@ -130,10 +130,10 @@ Or you can specify it on class definition.
       }
     }
 
-In this case, all of the methods in the class is under effect of WithTypeLogging.
+In this case, all of the methods in the class are under effect of @WithTypeLogging.
 
 This annotation makes the specified method to record actual types of method/closure arguments and type of return value of method internally.
-When the program exit, those recorded information are writen to 'staticalizer.patch' file.
+When the program exits, those recorded information are written to 'staticalizer.patch' file.
 
 Behind the hood, STATICALIZER_HOME/bin/staticalizer script just applies this AST transformation on the script to run.
 
@@ -142,18 +142,18 @@ When you use this annotation, you have to modify your CLASSPATH environment vari
     $ export CLASSPATH=STATICALIZER_HOME/lib/staticalizer-0.1.jar
     groovy test.groovy
 
-or speify it on -cp option. e.g.
+Or specify it on -cp option. e.g.
 
     groovy -cp STATICALIZER_HOME/lib/staticalizer-x.y.jar test.groovy
 
-or you can copy the jar into ~/.groovy/lib/ directry.
+Or you can copy the jar into ~/.groovy/lib/ directly.
 
 Environment
 -------------
 
-Staticalize itself is pure java program. But the wrapper scripts staticalizer/staticalizer.bat are supplied in bourne shell script and Window batch file. Many unix like environment and windows can run it.
+Staticalize itself is pure java program. But the wrapper scripts staticalizer and staticalizer.bat are supplied in bourne shell script and Window batch file. Many unix-like environment and windows could run it.
 
-To apply the patch file generated by staticalizer, patch command or some tools which can handle unified-diff-form patch file have to be available.
+To apply the patch file generated by staticalizer, patch command or some tools that can handle unified-diff-form patch file have to be available.
 
 License
 ----------
