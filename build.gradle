@@ -22,44 +22,6 @@ dependencies {
 
 test.dependsOn jar
 
-task writeNewPom << {
-    pom {
-        project {
-            inceptionYear '2012'
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-        }
-    }.writeTo("$buildDir/newpom.xml")
-}
-
-configurations {
-    deployerJars
-}
-
-uploadArchives {
-    repositories.mavenDeployer {
-        name = 'sshDeployer' // optional
-        configuration = configurations.deployerJars
-        repository(url: "scp://repos.mycompany.com/releases") {
-            authentication(userName: "me", password: "myPassword")
-        }
-        pom.project {
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-        }        
-    }
-}
-
 task dist(dependsOn: ['distBin', 'distSrc'])
 
 def executablesSpec = copySpec {
@@ -92,6 +54,7 @@ def srcSpec = copySpec {
 
 task distBin(type: Zip, dependsOn: 'jar') {
     baseName = project.name
+    classifier = 'bin'
     into "$baseName-$version"
     with executablesSpec
 }
@@ -106,4 +69,3 @@ task distSrc(type: Zip) {
 task wrapper(type: Wrapper) {
     gradleVersion = '1.3'
 }
-

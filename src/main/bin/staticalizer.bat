@@ -17,7 +17,7 @@ if not exist "%STATICALIZER_HOME%\lib\staticalizer-*.jar" (
 )
 
 set CLASSPATH=%STATICALIZER_HOME%\lib\staticalizer-@STATICALIZER_VERSION@.jar;%CLASSPATH%
-groovy -e 'groovy.ui.GroovyMain2.main(args)' %*
+groovy -e "groovy.ui.GroovyMain2.main(args)" -- %*
 
 :end
 

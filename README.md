@@ -1,83 +1,116 @@
 Staticalizer
 ======================
 
-Staticalizer is a tool to support static groovy.
+Staticalizer is a tool to support using static groovy.
 
-Groovy 2.0's static groovy feature is easy to use and powerful way of to get the benefit of static typing.
+Groovy 2.0's static groovy feature is easy to use and powerful way to get the benefit of static typing.
 (Just put @CompileStatic!)
 
-But if you have tons of dynamic typed groovy code, it is not easy to modify all of those code to be static. Because:
+But if you have tons of dynamic typed groovy code, it is not easy to modify all of those code to be static.
+Because:
 
-- It is not obvious the type of method parameter. Some method parameter might have different type with each invocation. In those case, you have to specify Loweest Upper Bound type among those types.
+- The type of method parameter is not obvious. Some method parameter might be different type with each invocation. In those case, you have to specify Loweest Upper Bound type among those types.
 - You have to trace the call chain trace if the value is supplied by other method.
 
-By using staticalizer, you can feedback the information of dynamic type of method/closure parameters and method return type information to source code. (partially by hand)
+Basically Groovy's supoort of type inference is not work with inter-method information.
+So omitted type infomation which method parameters is, or from which method returns can't be inffered.
+To put it the other way around, if method parameter types and method return type is be decided, type infference get a chance to work well.
 
-Install
--------
+By using staticalizer, you can feedback the information from runtime actual type of method/closure parameters and method return type information to source code. (Partially by hand.)
 
-Download source or binary distribution of staticalizer from [here](https://github.com/uehaj/staticalizer/downloads),
-and extract it anywhre. We call the directory 'STATICALIZER_HOME' (don't neccessary to set it as environment variable).
+Install & Settings
+---------------------
+
+Download binary distribution of staticalizer jar (staticalizer-0.1-bin.jar) from [here](https://github.com/uehaj/staticalizer/downloads), and extract it anywhre. We call the directory 'STATICALIZER_HOME'. it is not neccessary to set that to environment variable.
 
 And add 'STATICALIZER_HOME/bin' directory to your PATH environment variable.
+For example, if you extract staticalizer to /tool/staticalizer, set:
+
+    export PATH=/tool/staticalizer/bin:${PATH}
+
+In addition, if you want to use annocation form, you have to put the jar file of
+STATICALIZER_HOME/lib/staticalizer-x.y.jar into your CLASSPATH.
+
+    $ export CLASSPATH=STATICALIZER_HOME/lib/staticalizer-0.1.jar
 
 Getting started
 ------------------
 
-Staticalizer command line is compatible to groovy command.
-So you can spacify any groovy options if you want.
+Let's start from using staticalizer command.
+The usage of staticalizer command is basically the same as usage of groovy command.
+You can spacify any groovy options if you want.
 
     $ cat hello.groovy
     def foo(n) {
-     return n*n
+      Closure c = {a,b -> a+b}
+      return c(n, n)
     }
-    println foo(2)
-    println foo(10.0d)
+    println foo(3)
+    println foo(3.5)
     
     $ staticallizer hello.groovy
-    4
-    100.0
+    6
+    7.0
     Patch file 'staticalizer.patch' generated. Apply the patch with command line:
      % (cd /; patch -b -p0) < staticalizer.patch
 
-Then 'staticalizer.patch' file is generated at current directory.
+Then 'staticalizer.patch' file would be generated on the current directory.
 Verify it.
 
     % cat staticalizer.patch
-    --- /work/staticalizer/hello.groovy 2012-48-04 07:48:40.000000000 +0900
-    +++ /work/staticalizer/hello.groovy.changed 2012-48-04 07:48:40.000000000 +0900
+    --- /work/hello.groovy 2012-01-04 12:01:17.000000000 +0900
+    +++ /work/hello.groovy.changed 2012-01-04 12:01:17.000000000 +0900
     @@ -1,0 +1,1 @@
     +// TODO: Change method argument type: foo(java.lang.Number n)
     @@ -1,0 +2,1 @@
     +// TODO: Change return type: java.lang.Number foo(...)
+    @@ -2,0 +4,1 @@
+    +// TODO: Change closure argument type: { java.lang.Number a,java.lang.Number b -> .. }
 
 If it is ok, do the command line displayed above.
 
     $ (cd /; patch -b -p0) < staticalizer.patch
-    patching file /work/staticalizer/hello.groovy
+    patching file /work/hello.groovy
  
-hello.groovy is modified to:
+Now, hello.groovy is modified.
 
     $ cat hello.groovy
     def foo(n) {
     // TODO: Change method argument type: foo(java.lang.Number n)
     // TODO: Change return type: java.lang.Number foo(...)
-     return n*n
+      Closure c = {a,b -> a+b}
+    // TODO: Change closure argument type: { java.lang.Number a,java.lang.Number b -> .. }
+      return c(n, n)
     }
-    println foo(2)
-    println foo(10.0d) 
+    println foo(3)
+    println foo(3.5)
 
-Please modify declaration of method foo by hand.
+Please modify hello.groovy by hand under those orders in the comment.
+Like:
+
+    Number foo(Number n) {
+      Closure c = {Number a, Number b -> a+b}
+      return c(n, n)
+    }
+
+Of course you would like to spefify @CompileStatic or @TypeChecked annotations.
+
+    @CompileStatic
+    Number foo(Number n) {
+      return n*n
+    }
+
+Caution: If any methods or closure is not executed at all, staticalizer.patch will not be generated at all and not be modified.
     
 AST Transformation Annotation
 ------------------------------------
 
-Staticalizer provides following local AST transformation annotation:
+Staticalizer also provides following local AST transformation annotation:
 
     staticalizer.transform.WithTypeLogging
 
 You can use this annotation directly instead of using STATICALIZER_HOME/bin/staticalizer script.
-You can specify this annotations to method:
+This annotation can be specified with method or constructor definitions:
 
     import org.jggug.kobo.staticalizer.transform.WithTypeLogging
     class X {
@@ -87,7 +120,7 @@ You can specify this annotations to method:
       }
     }
 
-or specify it on class.
+Or you can specify it on class definition.
 
     import org.jggug.kobo.staticalizer.transform.WithTypeLogging
     @WithTypeLogging
@@ -97,13 +130,14 @@ or specify it on class.
       }
     }
 
-This annotation makes the specified method to logging types of method or closure arguments and type of return value of method internally.
-When the program exit, those logged information are writen to 'staticalizer.patch' file.
+In this case, all of the methods in the class is under effect of WithTypeLogging.
 
-Behind the hood, STATICALIZER_HOME/bin/staticalizer script just apply this AST transformation on the script to run.
+This annotation makes the specified method to record actual types of method/closure arguments and type of return value of method internally.
+When the program exit, those recorded information are writen to 'staticalizer.patch' file.
 
-To use this annocations, you have to put the jar file of
-STATICALIZER_HOME/lib/staticalizer-x.y.jar into your CLASSPATH
+Behind the hood, STATICALIZER_HOME/bin/staticalizer script just applies this AST transformation on the script to run.
+
+When you use this annotation, you have to modify your CLASSPATH environment variable includes jar file 'STATICALIZER_HOME/lib/staticalizer-x.y.jar'.
 
     $ export CLASSPATH=STATICALIZER_HOME/lib/staticalizer-0.1.jar
     groovy test.groovy
@@ -112,8 +146,15 @@ or speify it on -cp option. e.g.
 
     groovy -cp STATICALIZER_HOME/lib/staticalizer-x.y.jar test.groovy
 
-You can also copy the jar into .groovy/lib directry.
- 
+or you can copy the jar into ~/.groovy/lib/ directry.
+
+Environment
+-------------
+
+Staticalize itself is pure java program. But the wrapper scripts staticalizer/staticalizer.bat are supplied in bourne shell script and Window batch file. Many unix like environment and windows can run it.
+
+To apply the patch file generated by staticalizer, patch command or some tools which can handle unified-diff-form patch file have to be available.
+
 License
 ----------
 
