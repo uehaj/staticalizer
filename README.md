@@ -72,7 +72,7 @@ If it is ok, do the command line displayed above.
     $ (cd /; patch -b -p0) < staticalizer.patch
     patching file /work/hello.groovy
  
-Now, hello.groovy is modified.
+Now, hello.groovy is modified. Original file is placed same directry renamed to *.orig extension(patch -b option's effect).
 
     $ cat hello.groovy
     def foo(n) {
