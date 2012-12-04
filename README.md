@@ -18,6 +18,8 @@ To put it the other way around, if method parameter types and method return type
 
 By using staticalizer, you can feedback the information from runtime actual type of method/closure parameters and method return type information to source code. (Partially by hand.)
 
+Caution: This software is very alpha quality now. Vast amount of existing code should be used as test. Please report :).
+
 Install & Settings
 ---------------------
 
