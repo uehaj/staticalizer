@@ -10,10 +10,10 @@ But if you have tons of dynamic typed groovy code, it is not easy to modify all 
 Because:
 
 - The type of method parameter is not obvious. Some method parameter might be different type with each invocation. In those case, you have to specify Loweest Upper Bound type among those types.
-- You have to trace the call chain trace if the value is supplied by other method.
+- You have to trace the method calls chain if a value is supplied by other method.
 
-Basically Groovy's supoort of type inference is not work with inter-method information.
-So omitted type infomation which method parameters is, or from which method returns can't be inffered.
+Basically Groovy's suport of type inference is not work with inter-method information.
+So omitted type of method parameters and the type of value which other method returns are can't be inffered.
 To put it the other way around, if method parameter types and method return type is be decided, type infference get a chance to work well.
 
 By using staticalizer, you can feedback the information from runtime actual type of method/closure parameters and method return type information to source code. (Partially by hand.)
